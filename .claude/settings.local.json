@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import sys; sys.path.insert(0, ''.''); from sociopathit.visuals.bar import bar; print(''bar OK'')\")",
+      "Bash(python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

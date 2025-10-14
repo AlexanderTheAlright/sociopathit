@@ -37,120 +37,99 @@ def trend(
     event_lines=None,
     shade_between=None,
     fill_area=False,
+    bar_color_mode="group",  # "group" or "continuous"
 ):
     """
-    Sociopath-it trend line or bar chart with optional smoothing.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Input dataframe.
-    x, y : str
-        Column names for x and y axes.
-    group : str, optional
-        Column to group lines by.
-    kind : str, default "line"
-        'line' or 'bar'.
-    title, subtitle : str
-        Plot titles.
-    style_mode : str, default "viridis"
-        Style theme.
-    figsize : tuple
-        Figure size.
-    marker : str
-        Marker style for line plots.
-    smooth : bool
-        Apply gaussian smoothing.
-    annotate : bool
-        Show value annotations.
-    event_lines : dict, optional
-        Dict of {x_value: label} for vertical event markers.
-    shade_between : list, optional
-        List of two group names to shade between.
-    fill_area : bool
-        Fill area under lines.
+    Sociopath-it trend line or bar chart with optional smoothing, shading, and events.
     """
     set_style(style_mode)
     fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
-    # Color palette
+    # --- Color palette handling ---
     if group:
-        metric = df.groupby(group)[y].mean()
-        thirds = max(1, len(metric) // 3)
-        gdict = {"positive": list(metric.index[:thirds]),
-                 "neutral": list(metric.index[thirds:2*thirds]),
-                 "negative": list(metric.index[2*thirds:])}
+        unique_groups = df[group].unique()
+        thirds = max(1, len(unique_groups) // 3)
+        gdict = {
+            "positive": list(unique_groups[:thirds]),
+            "neutral": list(unique_groups[thirds:2*thirds]),
+            "negative": list(unique_groups[2*thirds:])
+        }
         palette = generate_semantic_palette(gdict, mode=style_mode)
     else:
         cmap = cm.get_cmap("viridis")
         palette = {"default": cmap(0.6)}
 
+    # --- Plot types ---
     if kind == "bar":
-        sns.barplot(data=df, x=x, y=y, hue=group, palette=palette, ax=ax)
-    else:
-        # Store data for shading
-        group_data = {}
+        # Determine color strategy
+        if bar_color_mode == "continuous" and not group:
+            # Continuous colormap based on y values
+            norm = plt.Normalize(df[y].min(), df[y].max())
+            colors = cm.viridis(norm(df[y].values))
+            sns.barplot(data=df, x=x, y=y, palette=colors, ax=ax)
+        elif group:
+            sns.barplot(data=df, x=x, y=y, hue=group, palette=palette, ax=ax)
+        else:
+            sns.barplot(data=df, x=x, y=y, color=palette["default"], ax=ax)
 
+    else:  # Line plot
+        group_data = {}
         if group:
             for g, dfg in df.groupby(group):
                 color = palette.get(g, "grey")
                 dfg = dfg.sort_values(x).reset_index(drop=True)
-                xs = dfg[x].values
-                ys_raw = dfg[y].values
+                xs, ys_raw = dfg[x].values, dfg[y].values
                 ys = gaussian_filter1d(ys_raw, sigma=1) if smooth else ys_raw
-
                 group_data[g] = (xs, ys)
 
-                # Plot line
                 if fill_area:
-                    ax.fill_between(xs, 0, ys, color=color, alpha=0.2)
+                    ax.fill_between(xs, 0, ys, color=color, alpha=0.25)
                 ax.plot(xs, ys, marker=marker, label=str(g), color=color, lw=2, zorder=3)
 
-                # Annotation with background box to prevent overlap
                 if annotate:
                     last_val = ys[-1]
                     ax.text(xs[-1], last_val, f"{last_val:.1f}",
-                            ha="left", va="center", fontsize=9, color=color, weight="bold",
-                            bbox=dict(facecolor="white", edgecolor=color, linewidth=1.0,
-                                     boxstyle="round,pad=0.3", alpha=0.95))
+                            ha="left", va="center", fontsize=10, color=color, weight="bold",
+                            bbox=dict(facecolor="white", edgecolor=color, linewidth=0.8,
+                                      boxstyle="round,pad=0.3", alpha=0.9))
         else:
             df_sorted = df.sort_values(x).reset_index(drop=True)
-            xs = df_sorted[x].values
-            ys = df_sorted[y].values
-
+            xs, ys = df_sorted[x].values, df_sorted[y].values
             if fill_area:
-                ax.fill_between(xs, 0, ys, color=palette["default"], alpha=0.3)
+                ax.fill_between(xs, 0, ys, color=palette["default"], alpha=0.25)
             ax.plot(xs, ys, color=palette["default"], lw=2, marker=marker)
 
-        # Shade between two groups
+        # --- Optional shading between groups ---
         if shade_between and len(shade_between) == 2:
             g1, g2 = shade_between
             if g1 in group_data and g2 in group_data:
                 xs1, ys1 = group_data[g1]
                 xs2, ys2 = group_data[g2]
-                # Interpolate to common x values if needed
-                if len(xs1) == len(xs2) and np.array_equal(xs1, xs2):
-                    ax.fill_between(xs1, ys1, ys2, alpha=0.15, color="grey")
+                if np.array_equal(xs1, xs2):
+                    ax.fill_between(xs1, ys1, ys2, color="grey", alpha=0.15)
 
-    # Event lines with clear annotations
+    # --- Event lines ---
     if event_lines:
         for x_val, label in event_lines.items():
             ax.axvline(x=x_val, color="red", linestyle="--", lw=1.5, alpha=0.7, zorder=2)
             ax.text(x_val, ax.get_ylim()[1] * 0.95, label,
-                   rotation=90, va="top", ha="right", fontsize=9, color="red", weight="bold",
-                   bbox=dict(facecolor="white", edgecolor="red", linewidth=1.0,
-                            boxstyle="round,pad=0.3", alpha=0.9))
+                    rotation=90, va="top", ha="right", fontsize=9, color="red", weight="bold",
+                    bbox=dict(facecolor="white", edgecolor="red", linewidth=1.0,
+                              boxstyle="round,pad=0.3", alpha=0.9))
 
+    # --- Styling ---
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
     ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
-    ax.grid(axis="y", color="grey", linestyle=":", linewidth=0.7)
+    ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7, alpha=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    apply_titles(fig, title, subtitle)
     if group:
         ax.legend(title=group.replace("_", " ").title(), frameon=False, fontsize=9)
+
+    # --- Title layout ---
+    apply_titles(fig, title, subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     plt.show()
     return fig, ax

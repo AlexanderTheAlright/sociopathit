@@ -131,6 +131,21 @@ def cluster_interactive(
 # HEATMAP-CLUSTER HYBRID
 # ══════════════════════════════════════════════════════════════════════════════
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+from ..utils.style import set_style, get_continuous_cmap
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+from ..utils.style import set_style, get_continuous_cmap
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+from ..utils.style import set_style, get_continuous_cmap
+
 def heatmap_cluster(
     df,
     method="ward",
@@ -140,84 +155,70 @@ def heatmap_cluster(
     style_mode="viridis",
     cmap=None,
     annot=False,
-    figsize=(12, 10),
+    show_values=False,
+    figsize=(14, 12),
 ):
     """
-    Sociopath-it clustered heatmap with dendrograms.
-
-    Combines hierarchical clustering with heatmap visualization,
-    showing dendrograms on both axes.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Numeric dataset to cluster and visualize.
-    method : str, default "ward"
-        Linkage method.
-    metric : str, default "euclidean"
-        Distance metric.
-    title, subtitle : str
-        Plot titles.
-    style_mode : str
-        Sociopath-it style theme: fiery (dark red heat), viridis,
-        sentiment (RdYlGn), plainjane (RdBu), reviewer3 (grayscale).
-    cmap : str, optional
-        Colormap for heatmap. If None, uses style_mode's continuous colormap.
-    annot : bool
-        Show values in cells.
-    figsize : tuple
-        Figure size.
+    Sociopath-it clustered heatmap with dendrograms and precise Sociopath-it layout.
+    - Title/subtitle anchored at top-left corner
+    - Optional display of all cell values in bold black
     """
     set_style(style_mode)
 
-    # Use style-specific continuous colormap if not provided
     if cmap is None:
         cmap = get_continuous_cmap(style_mode)
 
-    # Select numeric columns
+    # Ensure numeric data
     data = df.select_dtypes(include=[np.number])
     if data.empty:
         raise ValueError("No numeric columns found for clustering.")
 
-    # Use seaborn's clustermap which does hierarchical clustering
+    # If show_values=True, override annot to True and force black text
+    annot_opt = True if show_values else annot
+    annot_kwargs = {"fmt": ".2f", "annot_kws": {"color": "black", "weight": "bold"}} if annot_opt else {}
+
+    # Create clustermap
     g = sns.clustermap(
         data,
         method=method,
         metric=metric,
         cmap=cmap,
-        annot=annot,
-        fmt=".2f" if annot else "",
+        annot=annot_opt,
+        fmt=".2f" if annot_opt else "",
         figsize=figsize,
         cbar_kws={"shrink": 0.8, "label": "Value"},
         dendrogram_ratio=(0.15, 0.15),
         linewidths=0.5,
         linecolor="white",
         center=0 if "Rd" in cmap else None,
+        **annot_kwargs,
     )
 
-    # Apply Sociopath-it styling with proper spacing for title/subtitle
-    # Position title in top-left area with more space
+    fig = g.fig
+    fig.subplots_adjust(top=0.94)  # tighter header region
+
+    # Clear default seaborn title
+    g.fig.suptitle("")
+
+    # Title block (top-left corner)
     title_text = title or "Clustered Heatmap"
     subtitle_text = subtitle or ""
 
-    # Clear default title
-    g.fig.suptitle("")
+    left_x = 0.02  # flush left
+    base_y = 0.98  # slightly above the heatmap
 
-    # Add title and subtitle in top-left with proper spacing
-    # The clustermap leaves space at top, use it efficiently
     if subtitle_text:
-        # Title higher, subtitle below it
-        g.fig.text(
-            0.15, 0.98,
+        fig.text(
+            left_x, base_y,
             title_text,
-            fontsize=16,
+            fontsize=18,
             fontweight="bold",
             color="#111111",
             ha="left",
             va="top",
         )
-        g.fig.text(
-            0.15, 0.96,
+        fig.text(
+            left_x, base_y - 0.03,
             subtitle_text,
             fontsize=12,
             color="grey",
@@ -225,11 +226,10 @@ def heatmap_cluster(
             va="top",
         )
     else:
-        # Just title
-        g.fig.text(
-            0.15, 0.98,
+        fig.text(
+            left_x, base_y,
             title_text,
-            fontsize=16,
+            fontsize=18,
             fontweight="bold",
             color="#111111",
             ha="left",
@@ -237,4 +237,7 @@ def heatmap_cluster(
         )
 
     plt.show()
-    return g.fig, g.ax_heatmap
+    return fig, g.ax_heatmap
+
+
+

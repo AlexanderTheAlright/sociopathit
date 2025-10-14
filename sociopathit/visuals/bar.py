@@ -182,3 +182,175 @@ def bar(
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     plt.show()
     return fig, ax
+
+import plotly.graph_objects as go
+import numpy as np
+from ..utils.style import set_style, generate_semantic_palette
+
+
+def bar_interactive(
+    df,
+    x,
+    y,
+    title=None,
+    subtitle=None,
+    style_mode="viridis",
+    orientation="vertical",
+    highlight=None,
+    highlight_color="#D62828",
+    trace_line=False,
+    color_mode="categorical",  # "categorical" or "continuous"
+    group_col=None,
+    show_values=True,
+):
+    """
+    Sociopath-it interactive bar chart.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data for plotting.
+    x, y : str
+        Variable names for categories and values.
+    title, subtitle : str, optional
+        Title and subtitle text.
+    style_mode : str
+        Sociopath-it visual mode ('viridis', 'reviewer3', etc.).
+    orientation : str
+        'vertical' or 'horizontal'.
+    highlight : str, optional
+        Category name to highlight.
+    trace_line : bool, optional
+        Draw connecting line across bar tops.
+    color_mode : str
+        "categorical" (distinct palette) or "continuous" (value gradient).
+    group_col : str, optional
+        Optional grouping column for coloring.
+    show_values : bool, optional
+        Annotate bars with numeric labels.
+    """
+    set_style(style_mode)
+
+    # --- Color logic ---
+    if color_mode == "continuous":
+        from matplotlib import cm
+        cmap = cm.get_cmap("viridis")
+        norm_vals = (df[y] - df[y].min()) / (df[y].max() - df[y].min() + 1e-9)
+        colors = [f"rgba({int(r*255)},{int(g*255)},{int(b*255)},{a:.2f})"
+                  for r, g, b, a in cmap(norm_vals)]
+    elif group_col and group_col in df.columns:
+        groups = df[group_col].unique().tolist()
+        thirds = max(1, len(groups) // 3)
+        group_dict = {
+            "positive": groups[:thirds],
+            "neutral": groups[thirds:2*thirds],
+            "negative": groups[2*thirds:]
+        }
+        palette = generate_semantic_palette(group_dict, mode=style_mode)
+        colors = [palette.get(v, "#888888") for v in df[group_col]]
+    else:
+        colors = ["#D3D3D3" if highlight and v != highlight else highlight_color for v in df[x]]
+
+    # --- Build figure ---
+    fig = go.Figure()
+
+    # Bar layer
+    if orientation == "horizontal":
+        fig.add_trace(
+            go.Bar(
+                y=df[x],
+                x=df[y],
+                orientation="h",
+                marker_color=colors,
+                hovertemplate="<b>%{y}</b><br>Value: %{x}<extra></extra>",
+            )
+        )
+    else:
+        fig.add_trace(
+            go.Bar(
+                x=df[x],
+                y=df[y],
+                marker_color=colors,
+                hovertemplate="<b>%{x}</b><br>Value: %{y}<extra></extra>",
+            )
+        )
+
+    # Trace line (optional)
+    if trace_line:
+        if orientation == "horizontal":
+            fig.add_trace(
+                go.Scatter(
+                    x=df[y],
+                    y=df[x],
+                    mode="lines+markers",
+                    line=dict(color="grey", width=1.2),
+                    marker=dict(color="grey", size=6),
+                    name="trend",
+                    hoverinfo="skip",
+                )
+            )
+        else:
+            fig.add_trace(
+                go.Scatter(
+                    x=df[x],
+                    y=df[y],
+                    mode="lines+markers",
+                    line=dict(color="grey", width=1.2),
+                    marker=dict(color="grey", size=6),
+                    name="trend",
+                    hoverinfo="skip",
+                )
+            )
+
+    # Value annotations
+    if show_values:
+        if orientation == "horizontal":
+            for i, val in enumerate(df[y]):
+                fig.add_annotation(
+                    x=val,
+                    y=df[x][i],
+                    text=f"<b>{val:.0f}</b>",
+                    showarrow=False,
+                    xanchor="left",
+                    yanchor="middle",
+                    font=dict(size=12, color="#333333"),
+                    xshift=10,
+                )
+        else:
+            for i, val in enumerate(df[y]):
+                fig.add_annotation(
+                    x=df[x][i],
+                    y=val,
+                    text=f"<b>{val:.0f}</b>",
+                    showarrow=False,
+                    yanchor="bottom",
+                    font=dict(size=12, color="#333333"),
+                    yshift=8,
+                )
+
+    # Layout styling
+    fig.update_layout(
+        template="plotly_white",
+        height=600,
+        margin=dict(t=90, b=50, l=60, r=30),
+        title=dict(
+            text=f"<b>{title or f'{y.title()} by {x.title()}'}</b>"
+                 + (f"<br><span style='color:grey;font-size:14px;'>{subtitle}</span>"
+                    if subtitle else ""),
+            x=0.5,
+            xanchor="center",
+            yanchor="top",
+            y=0.96,
+        ),
+        xaxis_title=x.title() if orientation != "horizontal" else "",
+        yaxis_title=y.title() if orientation != "horizontal" else "",
+        plot_bgcolor="white",
+        showlegend=False,
+    )
+
+    # Fine-tuning axis fonts
+    fig.update_xaxes(showgrid=False, tickfont=dict(size=12, color="#333"))
+    fig.update_yaxes(showgrid=True, gridcolor="rgba(180,180,180,0.3)", tickfont=dict(size=12, color="#333"))
+
+    return fig
+

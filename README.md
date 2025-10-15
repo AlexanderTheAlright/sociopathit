@@ -1,6 +1,6 @@
 # Sociopath-it
 
-**Sociopath-it** is a suite of Python tools for data cleaning, harmonization, analysis, and visualization — built for sociologists who love code and distrust objectivity just enough to do it right.
+**Sociopath-it** is a suite of Python tools for data cleaning, harmonization, analysis, and visualization. Built for sociologists who love code and distrust objectivity just enough to do it right.
 
 ---
 

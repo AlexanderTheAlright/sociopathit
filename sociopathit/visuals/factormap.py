@@ -147,11 +147,11 @@ def factormap(
 
     # Axis labels with explained variance
     if perc_var:
-        ax.set_xlabel(f"{dim_labels[0]} ({perc_var[0]*100:.1f}%)", weight="bold", fontsize=12)
-        ax.set_ylabel(f"{dim_labels[1]} ({perc_var[1]*100:.1f}%)", weight="bold", fontsize=12)
+        ax.set_xlabel(f"{dim_labels[0]} ({perc_var[0]*100:.1f}%)", weight="bold", fontsize=12, color="black")
+        ax.set_ylabel(f"{dim_labels[1]} ({perc_var[1]*100:.1f}%)", weight="bold", fontsize=12, color="black")
     else:
-        ax.set_xlabel(dim_labels[0], weight="bold", fontsize=12)
-        ax.set_ylabel(dim_labels[1], weight="bold", fontsize=12)
+        ax.set_xlabel(dim_labels[0], weight="bold", fontsize=12, color="black")
+        ax.set_ylabel(dim_labels[1], weight="bold", fontsize=12, color="black")
 
     # Legend outside to the right with larger text
     legend = ax.legend(
@@ -160,9 +160,9 @@ def factormap(
         frameon=True,
         facecolor="white",
         edgecolor="grey",
-        fontsize=12,
+        fontsize=10,
         title="Variable Type",
-        title_fontsize=13,
+        title_fontsize=11,
     )
     legend.get_title().set_fontweight("bold")
     legend.get_frame().set_linewidth(1.5)

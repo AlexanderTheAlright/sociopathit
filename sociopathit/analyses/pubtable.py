@@ -394,8 +394,8 @@ def descriptive_table(
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 
 def regression_table(
-    models: Union[pd.DataFrame, List[pd.DataFrame]],
-    model_names: Optional[List[str]] = None,
+    models: Union[pd.DataFrame, List[pd.DataFrame], Dict[str, List[pd.DataFrame]]],
+    model_names: Optional[Union[List[str], Dict[str, List[str]]]] = None,
     decimals: int = 3,
     title: str = "Regression Results",
     show_se: bool = True,
@@ -403,19 +403,22 @@ def regression_table(
     show_stars: bool = True,
     var_labels: Optional[Dict[str, str]] = None,
     coef_order: Optional[List[str]] = None,
-    stats_rows: Optional[Dict[str, List]] = None,
+    stats_rows: Optional[Union[Dict[str, List], Dict[str, Dict[str, List]]]] = None,
+    model_groups: Optional[Dict[str, List[int]]] = None,
+    is_multilevel: bool = False,
 ) -> str:
     """
-    Create publication-ready regression coefficient table.
+    Create publication-ready regression coefficient table with support for grouped models and multilevel models.
 
     Parameters
     ----------
-    models : DataFrame or list of DataFrame
+    models : DataFrame, list of DataFrame, or dict of str: list of DataFrame
         Model results. Each DataFrame should have columns:
         ['term', 'estimate', 'std.error', 'statistic', 'p.value']
         Or ['term', 'estimate', 'conf.low', 'conf.high', 'p.value']
-    model_names : list of str, optional
-        Names for each model column.
+        For grouped models, use dict: {'Outcome 1': [model1_df, model2_df], 'Outcome 2': [model3_df]}
+    model_names : list of str, dict of str: list of str, optional
+        Names for each model column. For grouped models, use dict matching models structure.
     decimals : int, default 3
         Decimal places for coefficients.
     title : str
@@ -431,7 +434,11 @@ def regression_table(
     coef_order : list of str, optional
         Order to display coefficients.
     stats_rows : dict, optional
-        Additional statistics rows, e.g., {'N': [100, 150], 'R²': [0.45, 0.52]}.
+        Additional statistics rows. For grouped models, use nested dict structure.
+    model_groups : dict, optional
+        Deprecated. Use dict format for models parameter instead.
+    is_multilevel : bool, default False
+        If True, format table to show fixed and random effects sections.
 
     Returns
     -------
@@ -440,23 +447,46 @@ def regression_table(
 
     Examples
     --------
-    >>> import statsmodels.api as sm
-    >>> df = pd.DataFrame({'y': [1, 2, 3], 'x': [1, 2, 3]})
-    >>> model = sm.OLS(df['y'], sm.add_constant(df['x'])).fit()
+    Simple model:
     >>> results_df = pd.DataFrame({
-    ...     'term': model.params.index,
-    ...     'estimate': model.params.values,
-    ...     'std.error': model.bse.values,
-    ...     'p.value': model.pvalues.values
+    ...     'term': ['const', 'x'],
+    ...     'estimate': [1.0, 2.0],
+    ...     'std.error': [0.1, 0.2],
+    ...     'p.value': [0.001, 0.001]
     ... })
     >>> html = regression_table(results_df, title='OLS Results')
+
+    Grouped models:
+    >>> grouped = {
+    ...     'Satisfaction': [model1_df, model2_df],
+    ...     'Well-being': [model3_df, model4_df]
+    ... }
+    >>> names = {
+    ...     'Satisfaction': ['Model 1', 'Model 2'],
+    ...     'Well-being': ['Model 1', 'Model 2']
+    ... }
+    >>> html = regression_table(grouped, model_names=names)
     """
+    # Check if grouped models (dict format)
+    if isinstance(models, dict):
+        return _regression_table_grouped(
+            models, model_names, decimals, title, show_se, show_ci,
+            show_stars, var_labels, coef_order, stats_rows
+        )
+
     # Normalize to list of DataFrames
     if isinstance(models, pd.DataFrame):
         models = [models]
 
     if model_names is None:
         model_names = [f"Model {i+1}" for i in range(len(models))]
+
+    # Check for multilevel model structure
+    if is_multilevel:
+        return _regression_table_multilevel(
+            models, model_names, decimals, title, show_se, show_ci,
+            show_stars, var_labels, coef_order, stats_rows
+        )
 
     # Get all unique terms
     all_terms = []
@@ -545,6 +575,245 @@ def regression_table(
                 css_class += " indent"
             html += f'<td class="{css_class}">{val}</td>'
         html += '</tr>'
+
+    html += '</tbody></table>'
+
+    if show_stars:
+        html += '<p class="note" style="margin-left: 20px; font-size: 9pt; font-style: italic;">Note: *** p<.001, ** p<.01, * p<.05</p>'
+
+    return html
+
+
+def _regression_table_grouped(
+    models_dict: Dict[str, List[pd.DataFrame]],
+    model_names: Optional[Dict[str, List[str]]],
+    decimals: int,
+    title: str,
+    show_se: bool,
+    show_ci: bool,
+    show_stars: bool,
+    var_labels: Optional[Dict[str, str]],
+    coef_order: Optional[List[str]],
+    stats_rows: Optional[Dict[str, Dict[str, List]]],
+) -> str:
+    """Generate grouped regression table with multiple outcome groups."""
+
+    # Create model names if not provided
+    if model_names is None:
+        model_names = {}
+        for group, group_models in models_dict.items():
+            model_names[group] = [f"Model {i+1}" for i in range(len(group_models))]
+
+    # Get all unique terms across all models
+    all_terms = []
+    for group_models in models_dict.values():
+        for model_df in group_models:
+            for term in model_df['term']:
+                if term not in all_terms:
+                    all_terms.append(term)
+
+    # Apply custom order if provided
+    if coef_order:
+        ordered_terms = [t for t in coef_order if t in all_terms]
+        remaining = [t for t in all_terms if t not in coef_order]
+        all_terms = ordered_terms + remaining
+
+    # Build column structure
+    html = _apply_table_style()
+    html += f'<table class="pubtable">'
+    html += f'<caption>{title}</caption>'
+    html += '<thead>'
+
+    # First header row: outcome groups
+    html += '<tr><th></th>'
+    for group, group_models in models_dict.items():
+        html += f'<th colspan="{len(group_models)}" style="text-align: center; border-bottom: 1px solid #ccc;">{group}</th>'
+    html += '</tr>'
+
+    # Second header row: model names
+    html += '<tr><th></th>'
+    for group in models_dict.keys():
+        for model_name in model_names[group]:
+            html += f'<th class="number">{model_name}</th>'
+    html += '</tr></thead><tbody>'
+
+    # Build coefficient rows
+    for term in all_terms:
+        # Coefficient row
+        html += '<tr>'
+        html += f'<td>{var_labels.get(term, term) if var_labels else term}</td>'
+
+        for group, group_models in models_dict.items():
+            for model_df in group_models:
+                term_data = model_df[model_df['term'] == term]
+
+                if term_data.empty:
+                    html += '<td class="number"></td>'
+                else:
+                    est = term_data['estimate'].iloc[0]
+                    p = term_data['p.value'].iloc[0]
+                    coef_str = _format_number(est, decimals)
+                    if show_stars:
+                        coef_str += _significance_stars(p)
+                    html += f'<td class="number">{coef_str}</td>'
+
+        html += '</tr>'
+
+        # Standard error or CI row
+        if show_se or show_ci:
+            html += '<tr><td class="indent"></td>'
+
+            for group, group_models in models_dict.items():
+                for model_df in group_models:
+                    term_data = model_df[model_df['term'] == term]
+
+                    if term_data.empty:
+                        html += '<td class="number"></td>'
+                    else:
+                        if show_ci and 'conf.low' in term_data.columns:
+                            ci_low = term_data['conf.low'].iloc[0]
+                            ci_high = term_data['conf.high'].iloc[0]
+                            html += f'<td class="number">{_ci_string(ci_low, ci_high, decimals)}</td>'
+                        elif show_se and 'std.error' in term_data.columns:
+                            se = term_data['std.error'].iloc[0]
+                            html += f'<td class="number">({_format_number(se, decimals)})</td>'
+                        else:
+                            html += '<td class="number"></td>'
+
+            html += '</tr>'
+
+    # Add statistics rows if provided
+    if stats_rows:
+        for stat_name, group_stats in stats_rows.items():
+            html += f'<tr><td>{stat_name}</td>'
+            for group in models_dict.keys():
+                if group in group_stats:
+                    for val in group_stats[group]:
+                        val_str = _format_number(val, 2) if isinstance(val, (int, float)) else str(val)
+                        html += f'<td class="number">{val_str}</td>'
+                else:
+                    for _ in models_dict[group]:
+                        html += '<td class="number"></td>'
+            html += '</tr>'
+
+    html += '</tbody></table>'
+
+    if show_stars:
+        html += '<p class="note" style="margin-left: 20px; font-size: 9pt; font-style: italic;">Note: *** p<.001, ** p<.01, * p<.05</p>'
+
+    return html
+
+
+def _regression_table_multilevel(
+    models: List[pd.DataFrame],
+    model_names: List[str],
+    decimals: int,
+    title: str,
+    show_se: bool,
+    show_ci: bool,
+    show_stars: bool,
+    var_labels: Optional[Dict[str, str]],
+    coef_order: Optional[List[str]],
+    stats_rows: Optional[Dict[str, List]],
+) -> str:
+    """Generate multilevel model table with fixed and random effects sections."""
+
+    html = _apply_table_style()
+    html += f'<table class="pubtable">'
+    html += f'<caption>{title}</caption>'
+    html += '<thead><tr><th></th>'
+
+    for name in model_names:
+        html += f'<th class="number">{name}</th>'
+    html += '</tr></thead><tbody>'
+
+    # Separate fixed and random effects
+    for model_df in models:
+        if 'effect_type' not in model_df.columns:
+            model_df['effect_type'] = 'fixed'
+
+    # Fixed Effects section
+    html += '<tr><td colspan="100%" style="font-weight: bold; background-color: #f5f5f5; padding: 8px;">Fixed Effects</td></tr>'
+
+    fixed_terms = []
+    for model_df in models:
+        fixed_df = model_df[model_df['effect_type'] == 'fixed']
+        for term in fixed_df['term']:
+            if term not in fixed_terms:
+                fixed_terms.append(term)
+
+    if coef_order:
+        ordered_terms = [t for t in coef_order if t in fixed_terms]
+        remaining = [t for t in fixed_terms if t not in coef_order]
+        fixed_terms = ordered_terms + remaining
+
+    for term in fixed_terms:
+        html += '<tr>'
+        html += f'<td>{var_labels.get(term, term) if var_labels else term}</td>'
+
+        for model_df in models:
+            term_data = model_df[(model_df['term'] == term) & (model_df['effect_type'] == 'fixed')]
+
+            if term_data.empty:
+                html += '<td class="number"></td>'
+            else:
+                est = term_data['estimate'].iloc[0]
+                p = term_data['p.value'].iloc[0]
+                coef_str = _format_number(est, decimals)
+                if show_stars:
+                    coef_str += _significance_stars(p)
+                html += f'<td class="number">{coef_str}</td>'
+
+        html += '</tr>'
+
+        if show_se or show_ci:
+            html += '<tr><td class="indent"></td>'
+            for model_df in models:
+                term_data = model_df[(model_df['term'] == term) & (model_df['effect_type'] == 'fixed')]
+
+                if term_data.empty:
+                    html += '<td class="number"></td>'
+                elif show_se and 'std.error' in term_data.columns:
+                    se = term_data['std.error'].iloc[0]
+                    html += f'<td class="number">({_format_number(se, decimals)})</td>'
+                else:
+                    html += '<td class="number"></td>'
+            html += '</tr>'
+
+    # Random Effects section
+    html += '<tr><td colspan="100%" style="font-weight: bold; background-color: #f5f5f5; padding: 8px; padding-top: 15px;">Random Effects</td></tr>'
+
+    random_terms = []
+    for model_df in models:
+        random_df = model_df[model_df['effect_type'] == 'random']
+        for term in random_df['term']:
+            if term not in random_terms:
+                random_terms.append(term)
+
+    for term in random_terms:
+        html += '<tr>'
+        html += f'<td>{var_labels.get(term, term) if var_labels else term}</td>'
+
+        for model_df in models:
+            term_data = model_df[(model_df['term'] == term) & (model_df['effect_type'] == 'random')]
+
+            if term_data.empty:
+                html += '<td class="number"></td>'
+            else:
+                est = term_data['estimate'].iloc[0]
+                html += f'<td class="number">{_format_number(est, decimals)}</td>'
+
+        html += '</tr>'
+
+    # Add statistics rows
+    if stats_rows:
+        html += '<tr><td colspan="100%" style="padding-top: 10px;"></td></tr>'
+        for stat_name, stat_values in stats_rows.items():
+            html += f'<tr><td>{stat_name}</td>'
+            for val in stat_values:
+                val_str = _format_number(val, 2) if isinstance(val, (int, float)) else str(val)
+                html += f'<td class="number">{val_str}</td>'
+            html += '</tr>'
 
     html += '</tbody></table>'
 

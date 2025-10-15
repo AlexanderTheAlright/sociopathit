@@ -127,17 +127,14 @@ def histogram(
                 # Simple line for 2-3 points
                 ax.plot(bin_centers, counts, color="grey", linewidth=2, alpha=0.8, zorder=3, marker='o')
 
-    # ─── Threshold lines ────────────────────────────────────────────────────────
+    # ─── Threshold lines (without annotated number blocks) ────────────────────────────────────────────────────────
     if thresholds:
         for thresh in thresholds:
             ax.axvline(thresh, color="red", linestyle="--", linewidth=1.5, alpha=0.8, zorder=4)
-            ax.text(thresh, ax.get_ylim()[1] * 0.95, f"{thresh}",
-                   ha="center", va="top", fontsize=9, color="red", weight="bold",
-                   bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="red"))
 
     # ─── Axis styling ───────────────────────────────────────────────────────────
-    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
-    ax.set_ylabel("Frequency", fontsize=12, weight="bold", color="grey")
+    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
+    ax.set_ylabel("Frequency", fontsize=12, weight="bold", color="black")
     ax.grid(axis="y", color="grey", linestyle=":", linewidth=0.7)
     for side in ["top", "right"]:
         ax.spines[side].set_visible(False)
@@ -148,27 +145,42 @@ def histogram(
     # ─── Legend ────────────────────────────────────────────────────────────────
     if show_legend:
         if color_by:
-            ax.legend(loc="upper right", frameon=True, facecolor="white",
-                     edgecolor="lightgrey", fontsize=9, title=color_by.replace("_", " ").title(),
-                     title_fontsize=10.5)
+            legend = ax.legend(
+                bbox_to_anchor=(1.02, 1.0),
+                loc="upper left",
+                frameon=True,
+                facecolor="white",
+                edgecolor="grey",
+                fontsize=10,
+                title=color_by.replace("_", " ").title(),
+                title_fontsize=11,
+            )
+            legend.get_title().set_fontweight("bold")
+            legend.get_frame().set_linewidth(1.5)
+            legend.get_frame().set_alpha(0.95)
         else:
             legend_text = f"{x.replace('_', ' ').title()}  |  Bins: {bins}  |  N: {n:,}"
             leg = ax.legend(
                 [legend_text],
-                loc="upper right",
+                bbox_to_anchor=(1.02, 1.0),
+                loc="upper left",
                 frameon=True,
                 facecolor="white",
-                edgecolor="lightgrey",
-                fontsize=9,
+                edgecolor="grey",
+                fontsize=10,
                 title="Distribution Info",
-                title_fontsize=10.5,
+                title_fontsize=11,
             )
             leg.get_title().set_fontweight("bold")
-            leg.get_frame().set_alpha(0.9)
+            leg.get_frame().set_linewidth(1.5)
+            leg.get_frame().set_alpha(0.95)
 
     # ─── Layout ────────────────────────────────────────────────────────────────
     has_subtitle = bool(subtitle and str(subtitle).strip())
-    fig.tight_layout(rect=(0, 0, 1, 0.9 if has_subtitle else 0.94))
+    if show_legend:
+        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if has_subtitle else 0.94))
+    else:
+        fig.tight_layout(rect=(0, 0, 1, 0.9 if has_subtitle else 0.94))
     plt.show()
     return fig, ax
 

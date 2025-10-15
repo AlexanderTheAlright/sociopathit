@@ -195,44 +195,46 @@ def heatmap_cluster(
     )
 
     fig = g.fig
-    fig.subplots_adjust(top=0.94)  # tighter header region
+    fig.subplots_adjust(top=0.90)
 
     # Clear default seaborn title
     g.fig.suptitle("")
 
-    # Title block (top-left corner)
+    # Title block
     title_text = title or "Clustered Heatmap"
     subtitle_text = subtitle or ""
 
-    left_x = 0.02  # flush left
-    base_y = 0.98  # slightly above the heatmap
+    left_x = 0.02
+    base_y = 0.985
 
     if subtitle_text:
+        # Center-left placement
         fig.text(
-            left_x, base_y,
+            left_x, 0.97,
             title_text,
             fontsize=18,
             fontweight="bold",
-            color="#111111",
+            color="black",
             ha="left",
-            va="top",
+            va="center",
         )
         fig.text(
-            left_x, base_y - 0.03,
+            left_x, 0.945,
             subtitle_text,
             fontsize=12,
             color="grey",
             ha="left",
-            va="top",
+            va="center",
         )
     else:
+        # Center title when no subtitle
         fig.text(
-            left_x, base_y,
+            0.5, base_y,
             title_text,
             fontsize=18,
             fontweight="bold",
-            color="#111111",
-            ha="left",
+            color="black",
+            ha="center",
             va="top",
         )
 

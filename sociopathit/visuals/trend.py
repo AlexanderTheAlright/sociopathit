@@ -120,17 +120,33 @@ def trend(
                               boxstyle="round,pad=0.3", alpha=0.9))
 
     # --- Styling ---
-    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
-    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
+    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
+    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7, alpha=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     if group:
-        ax.legend(title=group.replace("_", " ").title(), frameon=False, fontsize=9)
+        legend = ax.legend(
+            title=group.replace("_", " ").title(),
+            bbox_to_anchor=(1.02, 1.0),
+            loc="upper left",
+            frameon=True,
+            facecolor="white",
+            edgecolor="grey",
+            fontsize=10,
+            title_fontsize=11,
+        )
+        legend.get_title().set_fontweight("bold")
+        legend.get_frame().set_linewidth(1.5)
+        legend.get_frame().set_alpha(0.95)
 
     # --- Title layout ---
     apply_titles(fig, title, subtitle)
-    fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
+    # Adjust layout based on whether legend is present
+    if group:
+        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
+    else:
+        fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     plt.show()
     return fig, ax
 

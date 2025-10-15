@@ -131,18 +131,18 @@ def wordcloud_interactive(
     highlight_groups=None,
     colormap="viridis",
     exact_words=200,
-    spacing_factor=400,
-    max_attempts=10,
-    r_min=20,
-    epsilon=10,
-    use_gradient=False,
+    spacing_factor=600,
+    max_attempts=50,
+    r_min=30,
+    epsilon=15,
+    use_gradient=True,
     use_custom_freq_colors=False,
     low_freq_color="#D3D3D3",
     high_freq_color="#000000",
     figsize=(900, 700),
 ):
     """
-    Build Plotly interactive wordcloud (no external WordCloud lib required).
+    Build Plotly interactive wordcloud.
 
     Parameters
     ----------
@@ -159,28 +159,28 @@ def wordcloud_interactive(
     items = sorted(freq_dict.items(), key=lambda x: x[1], reverse=True)[:exact_words]
     words, freqs = zip(*items)
     max_f, min_f = max(freqs), min(freqs)
-    sizes = [20 + (f / max_f) * 60 for f in freqs]
+    sizes = [15 + (f / max_f) * 45 for f in freqs]
 
     # Improved placement with better collision detection
     rng = np.random.default_rng(42)
     positions, boxes = [], []
     for w, f, sz in zip(words, freqs, sizes):
         # Use frequency-based radius with more spacing
-        rad = r_min + epsilon + (1 - f / max_f) * (spacing_factor - r_min - epsilon) * 1.2
+        rad = r_min + epsilon + (1 - f / max_f) * (spacing_factor - r_min - epsilon) * 2.0
         pt = None
-        for attempt in range(max_attempts * 2):  # More attempts for better placement
+        for attempt in range(max_attempts):
             # Spiral outward for better distribution
             th = rng.uniform(0, 2 * np.pi)
-            spiral_factor = 1 + (attempt / (max_attempts * 2)) * 0.5
+            spiral_factor = 1 + (attempt / max_attempts) * 1.5
             x, y = rad * spiral_factor * np.cos(th), rad * spiral_factor * np.sin(th)
 
-            # Larger bounding boxes with padding
-            padding = sz * 0.2
+            # Larger bounding boxes with more padding
+            padding = sz * 0.8
             bb = (
-                x - sz * len(w) * 0.35 - padding,
-                x + sz * len(w) * 0.35 + padding,
-                y - sz * 0.6 - padding,
-                y + sz * 0.6 + padding
+                x - sz * len(w) * 0.5 - padding,
+                x + sz * len(w) * 0.5 + padding,
+                y - sz * 0.8 - padding,
+                y + sz * 0.8 + padding
             )
 
             # Check collision
@@ -197,10 +197,10 @@ def wordcloud_interactive(
         if pt is None:
             # Fallback: place far from center
             th = rng.uniform(0, 2 * np.pi)
-            pt = (rad * 1.5 * np.cos(th), rad * 1.5 * np.sin(th))
+            pt = (rad * 2.0 * np.cos(th), rad * 2.0 * np.sin(th))
         positions.append(pt)
 
-    # Color assignment
+    # Color assignment using proper viridis
     cmap = cm.get_cmap(colormap)
     colors = []
     for w, f in zip(words, freqs):
@@ -223,7 +223,9 @@ def wordcloud_interactive(
                 r, g, b, _ = cmap(t)
                 color = f"rgb({int(r*255)},{int(g*255)},{int(b*255)})"
             else:
-                color = f"rgb({rng.integers(0,255)},{rng.integers(0,255)},{rng.integers(0,255)})"
+                # Default: use viridis gradient
+                r, g, b, _ = cmap(t)
+                color = f"rgb({int(r*255)},{int(g*255)},{int(b*255)})"
         colors.append(color)
 
     x, y = zip(*positions)

@@ -236,20 +236,33 @@ def cooccur_interactive(
             c = cmap(node_centralities.get(node, 0))
             colors.append(f"rgba({int(c[0]*255)}, {int(c[1]*255)}, {int(c[2]*255)}, {c[3]:.2f})")
 
+        # Add nodes with white background labels
         fig.add_trace(
             go.Scatter(
                 x=xs, y=ys,
-                mode="markers+text",
-                text=[n for n in G.nodes()],
+                mode="markers",
                 hovertext=texts,
-                textposition="middle center",
-                textfont=dict(size=13, color="#111111"),
                 marker=dict(size=sizes, color=colors, line=dict(color="white", width=1)),
                 hoverinfo="text",
                 showlegend=False,
             ),
             row=i, col=1
         )
+
+        # Add text annotations with white backgrounds
+        for node, (x_pos, y_pos) in zip(G.nodes(), zip(xs, ys)):
+            fig.add_annotation(
+                x=x_pos, y=y_pos,
+                text=f"<b>{node}</b>",
+                showarrow=False,
+                font=dict(size=11, color="#111111"),
+                bgcolor="white",
+                bordercolor="grey",
+                borderwidth=1.5,
+                borderpad=4,
+                opacity=0.9,
+                row=i, col=1
+            )
 
         fig.update_yaxes(visible=False, row=i, col=1)
         fig.update_xaxes(visible=False, row=i, col=1)

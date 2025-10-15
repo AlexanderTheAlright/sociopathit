@@ -105,7 +105,7 @@ def bar(
     # ─────────────────────────────────────────────
     if orientation == "horizontal":
         ax.barh(df[x], df[y], color=colors, **kwargs)
-        ax.set_xlabel(y.title(), fontsize=12, weight="bold", color="grey")
+        ax.set_xlabel(y.title(), fontsize=12, weight="bold", color="black")
         ax.set_ylabel("")
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
@@ -118,14 +118,26 @@ def bar(
             vals = df[c].values
             ax.bar(df[x], vals, bottom=bottom, label=c, color=palette.get(c, cm.get_cmap("viridis")(0.6)), **kwargs)
             bottom += vals
-        ax.legend(frameon=False)
-        ax.set_ylabel("Total")
-        ax.set_xlabel(x.title())
+        legend = ax.legend(
+            bbox_to_anchor=(1.02, 1.0),
+            loc="upper left",
+            frameon=True,
+            facecolor="white",
+            edgecolor="grey",
+            fontsize=10,
+            title="Categories",
+            title_fontsize=11,
+        )
+        legend.get_title().set_fontweight("bold")
+        legend.get_frame().set_linewidth(1.5)
+        legend.get_frame().set_alpha(0.95)
+        ax.set_ylabel("Total", fontsize=12, weight="bold", color="black")
+        ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
 
     else:  # vertical
         ax.bar(df[x], df[y], color=colors, **kwargs)
-        ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="grey")
-        ax.set_ylabel(y.title(), fontsize=12, weight="bold", color="grey")
+        ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
+        ax.set_ylabel(y.title(), fontsize=12, weight="bold", color="black")
 
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
@@ -179,7 +191,11 @@ def bar(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     apply_titles(fig, title or f"{y.title()} by {x.title()}", subtitle, n=n)
-    fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
+    # Adjust layout based on orientation (stacked has legend on right)
+    if orientation == "stacked":
+        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
+    else:
+        fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     plt.show()
     return fig, ax
 
@@ -329,21 +345,40 @@ def bar_interactive(
                 )
 
     # Layout styling
-    fig.update_layout(
-        template="plotly_white",
-        height=600,
-        margin=dict(t=90, b=50, l=60, r=30),
-        title=dict(
+    title_dict = {}
+    if subtitle:
+        # Top-left corner when subtitle present
+        title_dict = dict(
             text=f"<b>{title or f'{y.title()} by {x.title()}'}</b>"
-                 + (f"<br><span style='color:grey;font-size:14px;'>{subtitle}</span>"
-                    if subtitle else ""),
+                 + f"<br><span style='color:grey;font-size:14px;'>{subtitle}</span>",
+            x=0.02,
+            xanchor="left",
+            yanchor="top",
+            y=0.96,
+        )
+    else:
+        # Centered when no subtitle
+        title_dict = dict(
+            text=f"<b>{title or f'{y.title()} by {x.title()}'}</b>",
             x=0.5,
             xanchor="center",
             yanchor="top",
             y=0.96,
+        )
+
+    fig.update_layout(
+        template="plotly_white",
+        height=600,
+        margin=dict(t=90, b=50, l=60, r=30),
+        title=title_dict,
+        xaxis_title=dict(
+            text=x.title() if orientation != "horizontal" else "",
+            font=dict(size=12, color="black", family="Arial, sans-serif"),
         ),
-        xaxis_title=x.title() if orientation != "horizontal" else "",
-        yaxis_title=y.title() if orientation != "horizontal" else "",
+        yaxis_title=dict(
+            text=y.title() if orientation != "horizontal" else "",
+            font=dict(size=12, color="black", family="Arial, sans-serif"),
+        ),
         plot_bgcolor="white",
         showlegend=False,
     )

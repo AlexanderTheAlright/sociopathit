@@ -159,8 +159,8 @@ def scatterplot(
                                 color=palette["default"], alpha=0.15)
 
     # ─── Axis aesthetics ──────────────────────────────────────────────────────
-    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
-    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
+    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
+    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.grid(axis="y", color="grey", linestyle=":", linewidth=0.7)
     ax.set_axisbelow(True)
     for side in ["top", "right"]:
@@ -172,16 +172,17 @@ def scatterplot(
         leg_title = legend_title or group.replace("_", " ").title()
         legend = ax.legend(
             title=leg_title,
-            bbox_to_anchor=(1.01, 1.0),
+            bbox_to_anchor=(1.02, 1.0),
             loc="upper left",
             fontsize=10,
             title_fontsize=11,
             frameon=True,
             facecolor="white",
-            edgecolor="lightgrey",
+            edgecolor="grey",
         )
+        legend.get_title().set_fontweight("bold")
         legend.get_frame().set_alpha(0.95)
-        legend.get_frame().set_linewidth(1.0)
+        legend.get_frame().set_linewidth(1.5)
 
     has_subtitle = bool(subtitle and str(subtitle).strip())
     # Adjust layout based on whether legend is present

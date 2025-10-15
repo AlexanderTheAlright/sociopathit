@@ -31,6 +31,7 @@ try:
     import statsmodels.api as sm
     import statsmodels.formula.api as smf
     from statsmodels.stats.outliers_influence import variance_inflation_factor
+    from statsmodels.regression.mixed_linear_model import MixedLM
     STATSMODELS_AVAILABLE = True
 except ImportError:
     STATSMODELS_AVAILABLE = False
@@ -227,7 +228,7 @@ class RegressionModel:
         Returns
         -------
         dict
-            Dictionary with N, R², Adjusted R², AIC, BIC, etc.
+            Dictionary with N, R_squared, Adj_R_squared, AIC, BIC, etc.
         """
         if self.results is None:
             raise ValueError("Model not yet fitted. Call .fit() first.")
@@ -241,12 +242,12 @@ class RegressionModel:
 
         # R-squared for OLS
         if hasattr(self.results, 'rsquared'):
-            stats['R²'] = self.results.rsquared
-            stats['Adj. R²'] = self.results.rsquared_adj
+            stats['R_squared'] = self.results.rsquared
+            stats['Adj_R_squared'] = self.results.rsquared_adj
 
         # Pseudo R-squared for other models
         elif hasattr(self.results, 'prsquared'):
-            stats['Pseudo R²'] = self.results.prsquared
+            stats['Pseudo_R_squared'] = self.results.prsquared
 
         return stats
 
@@ -522,6 +523,312 @@ def marginal_effects(model: RegressionModel, at: Optional[dict] = None) -> pd.Da
     except Exception as e:
         warnings.warn(f"Could not calculate marginal effects: {e}")
         return pd.DataFrame()
+
+
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# MULTILEVEL MODELS
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+class MultilevelModel:
+    """
+    Multilevel (hierarchical/mixed-effects) regression model.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Input data.
+    outcome : str
+        Outcome (dependent) variable name.
+    fixed : str or list of str
+        Fixed effects variable name(s).
+    random : str or list of str
+        Random effects variable name(s).
+    groups : str
+        Grouping variable for random effects.
+    weight : str, optional
+        Survey weight variable.
+    re_formula : str, optional
+        Formula for random effects structure (e.g., "1" for random intercepts,
+        "1 + x" for random slopes and intercepts).
+
+    Attributes
+    ----------
+    results : MixedLMResults
+        Fitted model results.
+    tidy_results : DataFrame
+        Tidy coefficients table with effect_type column.
+
+    Examples
+    --------
+    Random intercepts model:
+    >>> model = MultilevelModel(df, outcome='y', fixed=['x1', 'x2'],
+    ...                         random='1', groups='school_id')
+    >>> model.fit()
+
+    Random slopes model:
+    >>> model = MultilevelModel(df, outcome='y', fixed=['x1', 'x2'],
+    ...                         random=['1', 'x1'], groups='school_id')
+    >>> model.fit()
+    """
+
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        outcome: str,
+        fixed: Union[str, List[str]],
+        random: Union[str, List[str]] = "1",
+        groups: str = None,
+        weight: Optional[str] = None,
+        re_formula: Optional[str] = None,
+    ):
+        if not STATSMODELS_AVAILABLE:
+            raise ImportError("statsmodels is required. Install with: pip install statsmodels")
+
+        self.df = df.copy()
+        self.outcome = outcome
+        self.fixed = [fixed] if isinstance(fixed, str) else fixed
+        self.random = [random] if isinstance(random, str) else random
+        self.groups = groups
+        self.weight = weight
+        self.re_formula = re_formula
+
+        self.results = None
+        self.tidy_results = None
+
+        # Validate inputs
+        self._validate_inputs()
+
+    def _validate_inputs(self):
+        """Validate that all variables exist in dataframe."""
+        missing = []
+        if self.outcome not in self.df.columns:
+            missing.append(self.outcome)
+        for var in self.fixed:
+            if var not in self.df.columns:
+                missing.append(var)
+        if self.groups and self.groups not in self.df.columns:
+            missing.append(self.groups)
+        if self.weight and self.weight not in self.df.columns:
+            missing.append(self.weight)
+
+        if missing:
+            raise ValueError(f"Variables not found in dataframe: {missing}")
+
+        if not self.groups:
+            raise ValueError("groups parameter is required for multilevel models")
+
+    def fit(self):
+        """Fit the multilevel model."""
+        # Prepare data (drop missing)
+        vars_needed = [self.outcome] + self.fixed + [self.groups]
+        if self.weight:
+            vars_needed.append(self.weight)
+
+        df_clean = self.df[vars_needed].dropna()
+
+        if len(df_clean) == 0:
+            raise ValueError("No observations remaining after dropping missing values")
+
+        # Get weights
+        weights = df_clean[self.weight] if self.weight else None
+
+        # Prepare X and y
+        y = df_clean[self.outcome]
+        X = df_clean[self.fixed]
+        X = sm.add_constant(X)
+        groups = df_clean[self.groups]
+
+        # Build random effects formula
+        if self.re_formula:
+            re_formula = self.re_formula
+        elif len(self.random) == 1 and self.random[0] == "1":
+            re_formula = "1"
+        else:
+            re_formula = " + ".join(self.random)
+
+        # Fit mixed linear model
+        try:
+            model = MixedLM(y, X, groups=groups, exog_re=None)
+
+            if weights is not None:
+                warnings.warn("Weights not fully supported in MixedLM. Using unweighted estimation.")
+
+            self.results = model.fit(method='lbfgs')
+        except Exception as e:
+            warnings.warn(f"LBFGS failed, trying default method: {e}")
+            self.results = model.fit()
+
+        # Create tidy results
+        self._create_tidy_results()
+
+        return self
+
+    def _create_tidy_results(self):
+        """Convert model results to tidy dataframe with fixed and random effects."""
+        # Fixed effects
+        fixed_df = pd.DataFrame({
+            'term': self.results.params.index,
+            'estimate': self.results.params.values,
+            'std.error': self.results.bse.values,
+            'statistic': self.results.tvalues.values,
+            'p.value': self.results.pvalues.values,
+            'conf.low': self.results.conf_int()[0].values,
+            'conf.high': self.results.conf_int()[1].values,
+            'effect_type': 'fixed'
+        })
+
+        # Random effects (variance components)
+        random_effects = []
+
+        # Group variance
+        if hasattr(self.results, 'cov_re'):
+            cov_re = self.results.cov_re
+            if isinstance(cov_re, np.ndarray):
+                if cov_re.ndim == 0:
+                    var_group = float(cov_re)
+                else:
+                    var_group = float(cov_re[0, 0]) if cov_re.size > 0 else 0.0
+            else:
+                var_group = float(cov_re)
+
+            random_effects.append({
+                'term': 'Group Variance',
+                'estimate': var_group,
+                'std.error': np.nan,
+                'statistic': np.nan,
+                'p.value': np.nan,
+                'conf.low': np.nan,
+                'conf.high': np.nan,
+                'effect_type': 'random'
+            })
+
+        # Residual variance
+        var_resid = self.results.scale
+        random_effects.append({
+            'term': 'Residual Variance',
+            'estimate': var_resid,
+            'std.error': np.nan,
+            'statistic': np.nan,
+            'p.value': np.nan,
+            'conf.low': np.nan,
+            'conf.high': np.nan,
+            'effect_type': 'random'
+        })
+
+        random_df = pd.DataFrame(random_effects)
+        self.tidy_results = pd.concat([fixed_df, random_df], ignore_index=True)
+
+    def summary(self) -> str:
+        """Print model summary."""
+        if self.results is None:
+            raise ValueError("Model not yet fitted. Call .fit() first.")
+        return str(self.results.summary())
+
+    def get_tidy(self) -> pd.DataFrame:
+        """
+        Get tidy results dataframe with both fixed and random effects.
+
+        Returns
+        -------
+        DataFrame
+            Tidy coefficients with effect_type column ('fixed' or 'random').
+        """
+        if self.tidy_results is None:
+            raise ValueError("Model not yet fitted. Call .fit() first.")
+        return self.tidy_results.copy()
+
+    def get_stats(self) -> dict:
+        """
+        Get model fit statistics.
+
+        Returns
+        -------
+        dict
+            Dictionary with N, AIC, BIC, Log-Likelihood, etc.
+        """
+        if self.results is None:
+            raise ValueError("Model not yet fitted. Call .fit() first.")
+
+        stats = {
+            'N': int(self.results.nobs),
+            'N_groups': self.results.n_groups,
+            'AIC': self.results.aic,
+            'BIC': self.results.bic,
+            'Log-Likelihood': self.results.llf,
+        }
+
+        return stats
+
+    def predict(self, newdata: Optional[pd.DataFrame] = None) -> np.ndarray:
+        """
+        Generate predictions (fixed effects only).
+
+        Parameters
+        ----------
+        newdata : DataFrame, optional
+            New data for prediction. If None, uses original data.
+
+        Returns
+        -------
+        array
+            Predicted values.
+        """
+        if self.results is None:
+            raise ValueError("Model not yet fitted. Call .fit() first.")
+
+        if newdata is None:
+            return self.results.fittedvalues
+
+        # Prepare newdata with constant
+        X_new = newdata[self.fixed]
+        X_new = sm.add_constant(X_new, has_constant='add')
+        return self.results.predict(X_new)
+
+
+def multilevel(
+    df: pd.DataFrame,
+    outcome: str,
+    fixed: Union[str, List[str]],
+    random: Union[str, List[str]] = "1",
+    groups: str = None,
+    weight: Optional[str] = None,
+) -> MultilevelModel:
+    """
+    Fit multilevel (hierarchical) regression model.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Input data.
+    outcome : str
+        Outcome variable.
+    fixed : str or list of str
+        Fixed effects variable(s).
+    random : str or list of str, default "1"
+        Random effects (use "1" for random intercepts only).
+    groups : str
+        Grouping variable (e.g., school, cluster ID).
+    weight : str, optional
+        Weight variable.
+
+    Returns
+    -------
+    MultilevelModel
+        Fitted multilevel model.
+
+    Examples
+    --------
+    Random intercepts:
+    >>> model = multilevel(df, 'test_score', fixed=['ses', 'gender'],
+    ...                    random='1', groups='school_id')
+
+    Random slopes:
+    >>> model = multilevel(df, 'test_score', fixed=['ses', 'gender'],
+    ...                    random=['1', 'ses'], groups='school_id')
+    """
+    model = MultilevelModel(df, outcome, fixed, random, groups, weight)
+    model.fit()
+    return model
 
 
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP

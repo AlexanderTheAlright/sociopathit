@@ -114,7 +114,7 @@ def waterfall(
 
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=10, color="grey")
-    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="grey")
+    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.grid(axis="y", linestyle=":", linewidth=0.7, color="grey", alpha=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)

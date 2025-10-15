@@ -178,32 +178,36 @@ def get_continuous_cmap(mode: str = None):
 def apply_titles(fig, title=None, subtitle=None, n=None):
     """
     Sociopath-it title logic:
-    - Bold centered title
-    - Optional grey subtitle beneath
-    - If subtitle is None, title recenters automatically
+    - If subtitle exists: title and subtitle at center-left
+    - If no subtitle: centered title
+    - Optional n count in bottom right
     """
     if title is None:
         return
 
     if subtitle:
-        fig.suptitle(
+        # Center-left placement for title + subtitle
+        fig.text(
+            0.02,
+            0.97,
             f"{title}",
             fontsize=15,
             weight="bold",
             color="black",
-            y=0.98,
-            ha="center",
+            ha="left",
+            va="center",
         )
         fig.text(
-            0.5,
-            0.945,
+            0.02,
+            0.94,
             f"{subtitle}",
             fontsize=11,
             color="grey",
-            ha="center",
-            va="top",
+            ha="left",
+            va="center",
         )
     else:
+        # Centered title when no subtitle
         fig.suptitle(
             f"{title}",
             fontsize=15,

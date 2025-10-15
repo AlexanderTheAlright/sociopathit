@@ -129,7 +129,7 @@ def coef(
         fontsize=12,
         color="#222222",
     )
-    ax.set_xlabel("Coefficient Estimate", fontsize=13, weight="bold", color="grey")
+    ax.set_xlabel("Coefficient Estimate", fontsize=13, weight="bold", color="black")
     ax.tick_params(axis="x", labelsize=11)
     ax.grid(axis="x", linestyle=":", color="grey", linewidth=0.7, alpha=0.7)
 

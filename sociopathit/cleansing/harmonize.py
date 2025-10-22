@@ -23,6 +23,7 @@ DIRECTORY STRUCTURE:
     /project_root/
         unprocessed/          ← Raw data files
         processed/            ← Harmonized datasets
+        codebooks/            ← Generated PDF codebooks
         metaset.xlsx          ← Metadata workbook (3 sheets: metadata, constructed, identifiers)
 """
 
@@ -77,13 +78,13 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path.cwd()
 DIR_UNPROCESSED = PROJECT_ROOT / "unprocessed"
 DIR_PROCESSED = PROJECT_ROOT / "processed"
-# DIR_CODEBOOKS = PROJECT_ROOT / "codebooks"  # Reserved for future PDF codebook generation
-# DIR_METADATA = PROJECT_ROOT / "metadata"    # Not used - metadata stored in metaset.xlsx
+DIR_CODEBOOKS = PROJECT_ROOT / "codebooks"
+DIR_METADATA = PROJECT_ROOT / "metadata"
 META_FILE = PROJECT_ROOT / "metaset.xlsx"
 CACHE_FILE = PROJECT_ROOT / ".metadata_cache.json"
 
-# Create directories (only those actively used)
-for p in (DIR_UNPROCESSED, DIR_PROCESSED):
+# Create directories
+for p in (DIR_UNPROCESSED, DIR_PROCESSED, DIR_CODEBOOKS, DIR_METADATA):
     p.mkdir(parents=True, exist_ok=True)
 
 # Stata limits

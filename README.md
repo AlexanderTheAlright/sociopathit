@@ -164,6 +164,7 @@ Available style modes:
 - **sentiment**: Red (negative) to green (positive) semantic coloring
 - **fiery**: Warm gradient for emphasis
 - **plainjane**: Simple greys and blues for minimalist presentations
+- **reviewer3**: Black and white gradient for your toughest reviewer
 
 ---
 

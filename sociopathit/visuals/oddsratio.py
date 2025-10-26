@@ -464,7 +464,7 @@ def oddsratio_interactive(
             ),
             mode='markers',
             marker=dict(color=color_str, size=10),
-            hovertemplate='<b>%{y}</b><br>OR: %{x:.3f}<extra></extra>',
+            hovertemplate='<b>%{y}</b><br>OR: %{x:.2f}<extra></extra>',
             showlegend=False,
         ))
     else:
@@ -473,7 +473,7 @@ def oddsratio_interactive(
             y=coef_df['label'],
             mode='markers',
             marker=dict(color=color_str, size=10),
-            hovertemplate='<b>%{y}</b><br>OR: %{x:.3f}<extra></extra>',
+            hovertemplate='<b>%{y}</b><br>OR: %{x:.2f}<extra></extra>',
             showlegend=False,
         ))
 

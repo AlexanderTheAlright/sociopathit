@@ -195,7 +195,7 @@ def waterfall(
         ax.spines[spine].set_color('black')
 
     ax.tick_params(axis='y', length=0, labelsize=10, colors='grey')
-    ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
     # Set y-limits with buffer
     y_center = (y_min + y_max) / 2
@@ -275,12 +275,12 @@ def waterfall_interactive(
 
     # Text annotations with percentages
     if annotate_percent:
-        text_labels = [f"{start_val:.1f}"] + [
-            f"+{d:.1f}<br>(+{pct:.0f}%)" if d >= 0 else f"−{abs(d):.1f}<br>({pct:.0f}%)"
+        text_labels = [f"{start_val:.2f}"] + [
+            f"+{d:.2f}<br>(+{pct:.0f}%)" if d >= 0 else f"−{abs(d):.2f}<br>({pct:.0f}%)"
             for d, pct in zip(deltas, percentages)
         ]
     else:
-        text_labels = [f"{v:.1f}" for v in display_values]
+        text_labels = [f"{v:.2f}" for v in display_values]
 
     all_labels = [categories[0]] + transition_labels
 

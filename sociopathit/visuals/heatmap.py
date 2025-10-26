@@ -104,7 +104,7 @@ def heatmap_interactive(df, title=None, subtitle=None, cmap=None, style_mode="vi
         texttemplate='<b>%{text:.2f}</b>',  # Bold text values
         textfont={"size": 11, "color": "black", "family": "Arial Black"},  # Bold font
         colorbar=dict(title="Correlation"),
-        hovertemplate='%{y} vs %{x}<br>Correlation: %{z:.3f}<extra></extra>',
+        hovertemplate='%{y} vs %{x}<br>Correlation: %{z:.2f}<extra></extra>',
         xgap=2,  # Add gap between cells for border effect
         ygap=2,
     ))

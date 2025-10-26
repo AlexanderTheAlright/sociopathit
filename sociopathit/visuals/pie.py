@@ -130,7 +130,7 @@ def pie(
             ax.text(
                 x * 0.65,
                 y * 0.65,
-                f"{cat}\n{pct:.1f}%",
+                f"{cat}\n{pct:.2f}%",
                 ha="center",
                 va="center",
                 fontsize=11,

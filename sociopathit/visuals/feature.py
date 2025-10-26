@@ -160,7 +160,7 @@ def feature_waterfall(
     # Plot base value
     ax.barh(0, base_value, color='lightgrey', edgecolor='black', linewidth=1.5,
            label='Base Value', height=0.6)
-    ax.text(base_value/2, 0, f'{base_value:.3f}',
+    ax.text(base_value/2, 0, f'{base_value:.2f}',
            ha='center', va='center', fontsize=10, weight='bold', color='black',
            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
@@ -174,7 +174,7 @@ def feature_waterfall(
 
         # Add value label with white-bordered background
         label_x = start + value/2
-        label_text = f'{value:+.3f}'
+        label_text = f'{value:+.2f}'
         ax.text(label_x, i + 1, label_text,
                ha='center', va='center', fontsize=9, weight='bold', color='black',
                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
@@ -186,7 +186,7 @@ def feature_waterfall(
     # Plot final prediction
     ax.barh(n_features + 1, prediction_value, color='steelblue',
            edgecolor='black', linewidth=1.5, height=0.6, alpha=0.9)
-    ax.text(prediction_value/2, n_features + 1, f'{prediction_value:.3f}',
+    ax.text(prediction_value/2, n_features + 1, f'{prediction_value:.2f}',
            ha='center', va='center', fontsize=10, weight='bold', color='black',
            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
@@ -317,7 +317,7 @@ def feature_importance_bar(
 
         # Add value labels with white borders
         for i, (bar, value) in enumerate(zip(bars, importance_series.values)):
-            ax.text(value + 0.01 * importance_series.max(), i, f'{value:.3f}',
+            ax.text(value + 0.01 * importance_series.max(), i, f'{value:.2f}',
                    va='center', fontsize=9, weight='bold', color='black',
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
     else:
@@ -333,7 +333,7 @@ def feature_importance_bar(
         for bar, value in zip(bars, importance_series.values):
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2, height + 0.01 * importance_series.max(),
-                   f'{value:.3f}', ha='center', va='bottom', fontsize=9, weight='bold', color='black',
+                   f'{value:.2f}', ha='center', va='bottom', fontsize=9, weight='bold', color='black',
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
     # Grid
@@ -454,7 +454,7 @@ def feature_waterfall_interactive(
         x=x_labels,
         y=y_values,
         textposition='outside',
-        text=[f'{v:+.3f}' if m == 'relative' else f'{v:.3f}'
+        text=[f'{v:+.2f}' if m == 'relative' else f'{v:.2f}'
               for v, m in zip(y_values, measure)],
         increasing={'marker': {'color': increasing_color}},
         decreasing={'marker': {'color': decreasing_color}},
@@ -570,9 +570,9 @@ def feature_importance_bar_interactive(
             x=importance_series.values,
             orientation='h',
             marker=dict(color=colors, line=dict(color='black', width=1.5)),
-            text=[f'{v:.3f}' for v in importance_series.values],
+            text=[f'{v:.2f}' for v in importance_series.values],
             textposition='outside',
-            hovertemplate='%{y}<br>Importance: %{x:.4f}<extra></extra>',
+            hovertemplate='%{y}<br>Importance: %{x:.2f}<extra></extra>',
         ))
 
         fig.update_yaxes(autorange="reversed")
@@ -583,9 +583,9 @@ def feature_importance_bar_interactive(
             x=[name.replace("_", " ").title() for name in importance_series.index],
             y=importance_series.values,
             marker=dict(color=colors, line=dict(color='black', width=1.5)),
-            text=[f'{v:.3f}' for v in importance_series.values],
+            text=[f'{v:.2f}' for v in importance_series.values],
             textposition='outside',
-            hovertemplate='%{x}<br>Importance: %{y:.4f}<extra></extra>',
+            hovertemplate='%{x}<br>Importance: %{y:.2f}<extra></extra>',
         ))
 
         xaxis_title = None

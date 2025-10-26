@@ -241,7 +241,7 @@ def cooccur_interactive(
         for node, data in G.nodes(data=True):
             x, y = pos[node]
             xs.append(x); ys.append(y)
-            texts.append(f"<b>{node}</b><br>Centrality: {node_centralities.get(node, 0):.3f}")
+            texts.append(f"<b>{node}</b><br>Centrality: {node_centralities.get(node, 0):.2f}")
             # Increase node sizes dynamically based on text length
             text_len = len(str(node))
             base_size = 18 + np.log(data["size"] + 1) * 25

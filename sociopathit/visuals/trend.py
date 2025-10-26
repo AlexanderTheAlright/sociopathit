@@ -90,7 +90,7 @@ def trend(
 
                 if annotate:
                     last_val = ys[-1]
-                    ax.text(xs[-1], last_val, f"{last_val:.1f}",
+                    ax.text(xs[-1], last_val, f"{last_val:.2f}",
                             ha="left", va="center", fontsize=10, color="black", weight="bold",
                             bbox=dict(facecolor="white", edgecolor='#333333', linewidth=1.5,
                                       boxstyle="round,pad=0.3", alpha=0.95))

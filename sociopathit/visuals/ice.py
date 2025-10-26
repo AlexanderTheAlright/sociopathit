@@ -499,8 +499,8 @@ def ice_interactive(
             mode='lines',
             line=dict(color=ice_color_str, width=1),
             hovertemplate=f'Observation {i}<br>' +
-                         f'{feature_name}: %{{x:.3f}}<br>' +
-                         'Prediction: %{y:.3f}<extra></extra>',
+                         f'{feature_name}: %{{x:.2f}}<br>' +
+                         'Prediction: %{y:.2f}<extra></extra>',
             showlegend=False,
         ))
 
@@ -512,8 +512,8 @@ def ice_interactive(
             mode='lines',
             line=dict(color=pdp_color_str, width=3),
             name='PDP (Average)',
-            hovertemplate=f'{feature_name}: %{{x:.3f}}<br>' +
-                         'Average Prediction: %{y:.3f}<extra></extra>',
+            hovertemplate=f'{feature_name}: %{{x:.2f}}<br>' +
+                         'Average Prediction: %{y:.2f}<extra></extra>',
         ))
 
     # Layout

@@ -161,8 +161,8 @@ def factormap(
 
     # Axis labels with explained variance
     if perc_var is not None:
-        ax.set_xlabel(f"{dim_labels[0]} ({perc_var[0]*100:.1f}%)", weight="bold", fontsize=12, color="black")
-        ax.set_ylabel(f"{dim_labels[1]} ({perc_var[1]*100:.1f}%)", weight="bold", fontsize=12, color="black")
+        ax.set_xlabel(f"{dim_labels[0]} ({perc_var[0]*100:.2f}%)", weight="bold", fontsize=12, color="black")
+        ax.set_ylabel(f"{dim_labels[1]} ({perc_var[1]*100:.2f}%)", weight="bold", fontsize=12, color="black")
     else:
         ax.set_xlabel(dim_labels[0], weight="bold", fontsize=12, color="black")
         ax.set_ylabel(dim_labels[1], weight="bold", fontsize=12, color="black")
@@ -236,7 +236,7 @@ def factormap_interactive(
                    line=dict(color="white", width=0.5)),
         name=active_label,
         text=[f"<b>{idx}</b>" for idx in active.index],
-        hovertemplate='%{text}<br>Dim1: %{x:.3f}<br>Dim2: %{y:.3f}<extra></extra>',
+        hovertemplate='%{text}<br>Dim1: %{x:.2f}<br>Dim2: %{y:.2f}<extra></extra>',
     ))
 
     # Plot supplementary
@@ -248,7 +248,7 @@ def factormap_interactive(
                        line=dict(color="black", width=1)),
             name=sup_label,
             text=[f"<b>{idx}</b>" for idx in sup.index],
-            hovertemplate='%{text}<br>Dim1: %{x:.3f}<br>Dim2: %{y:.3f}<extra></extra>',
+            hovertemplate='%{text}<br>Dim1: %{x:.2f}<br>Dim2: %{y:.2f}<extra></extra>',
         ))
 
     # Add zero lines
@@ -256,8 +256,8 @@ def factormap_interactive(
     fig.add_vline(x=0, line=dict(color="grey", width=1, dash="dash"), opacity=0.5)
 
     # Axis labels
-    xaxis_title = f"{dim_labels[0]} ({perc_var[0]*100:.1f}%)" if perc_var is not None else dim_labels[0]
-    yaxis_title = f"{dim_labels[1]} ({perc_var[1]*100:.1f}%)" if perc_var is not None else dim_labels[1]
+    xaxis_title = f"{dim_labels[0]} ({perc_var[0]*100:.2f}%)" if perc_var is not None else dim_labels[0]
+    yaxis_title = f"{dim_labels[1]} ({perc_var[1]*100:.2f}%)" if perc_var is not None else dim_labels[1]
 
     fig.update_layout(
         title=f"<b>{title}</b><br><span style='color:grey'>{subtitle or ''}</span>",
@@ -387,11 +387,11 @@ def factormap_3d(
 
     # Axis labels
     if perc_var is not None:
-        ax.set_xlabel(f"{dim_labels[0]} ({perc_var[0]*100:.1f}%)",
+        ax.set_xlabel(f"{dim_labels[0]} ({perc_var[0]*100:.2f}%)",
                      weight="bold", fontsize=11, color="black")
-        ax.set_ylabel(f"{dim_labels[1]} ({perc_var[1]*100:.1f}%)",
+        ax.set_ylabel(f"{dim_labels[1]} ({perc_var[1]*100:.2f}%)",
                      weight="bold", fontsize=11, color="black")
-        ax.set_zlabel(f"{dim_labels[2]} ({perc_var[2]*100:.1f}%)",
+        ax.set_zlabel(f"{dim_labels[2]} ({perc_var[2]*100:.2f}%)",
                      weight="bold", fontsize=11, color="black")
     else:
         ax.set_xlabel(dim_labels[0], weight="bold", fontsize=11, color="black")
@@ -490,7 +490,7 @@ def factormap_3d_interactive(
                    line=dict(color="white", width=0.5)),
         name=active_label,
         text=[f"<b>{idx}</b>" for idx in active.index],
-        hovertemplate='%{text}<br>Dim1: %{x:.3f}<br>Dim2: %{y:.3f}<br>Dim3: %{z:.3f}<extra></extra>',
+        hovertemplate='%{text}<br>Dim1: %{x:.2f}<br>Dim2: %{y:.2f}<br>Dim3: %{z:.2f}<extra></extra>',
     ))
 
     # Plot supplementary
@@ -502,13 +502,13 @@ def factormap_3d_interactive(
                        line=dict(color="black", width=1)),
             name=sup_label,
             text=[f"<b>{idx}</b>" for idx in sup.index],
-            hovertemplate='%{text}<br>Dim1: %{x:.3f}<br>Dim2: %{y:.3f}<br>Dim3: %{z:.3f}<extra></extra>',
+            hovertemplate='%{text}<br>Dim1: %{x:.2f}<br>Dim2: %{y:.2f}<br>Dim3: %{z:.2f}<extra></extra>',
         ))
 
     # Axis labels
-    xaxis_title = f"{dim_labels[0]} ({perc_var[0]*100:.1f}%)" if perc_var is not None else dim_labels[0]
-    yaxis_title = f"{dim_labels[1]} ({perc_var[1]*100:.1f}%)" if perc_var is not None else dim_labels[1]
-    zaxis_title = f"{dim_labels[2]} ({perc_var[2]*100:.1f}%)" if perc_var is not None else dim_labels[2]
+    xaxis_title = f"{dim_labels[0]} ({perc_var[0]*100:.2f}%)" if perc_var is not None else dim_labels[0]
+    yaxis_title = f"{dim_labels[1]} ({perc_var[1]*100:.2f}%)" if perc_var is not None else dim_labels[1]
+    zaxis_title = f"{dim_labels[2]} ({perc_var[2]*100:.2f}%)" if perc_var is not None else dim_labels[2]
 
     # Layout
     title_text = f"<b>{title}</b>"
@@ -628,7 +628,7 @@ def variance_explained(
                   alpha=0.7, label=f'Selected: {n_components} components')
         # Add annotation
         cum_var = cumulative[n_components - 1] * 100
-        ax2.annotate(f'{cum_var:.1f}%',
+        ax2.annotate(f'{cum_var:.2f}%',
                     xy=(n_components, cum_var),
                     xytext=(n_components + 0.5, cum_var - 5),
                     fontsize=11, weight='bold', color=warning_color,

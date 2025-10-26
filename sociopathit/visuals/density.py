@@ -463,7 +463,7 @@ def ryder_interactive(
                 fillcolor=color_str,
                 line=dict(color='black', width=1.5),
                 name=str(g),
-                hovertemplate=f"<b>{g}</b><br>Value: %{{x:.2f}}<br>Density: %{{y:.3f}}<extra></extra>",
+                hovertemplate=f"<b>{g}</b><br>Value: %{{x:.2f}}<br>Density: %{{y:.2f}}<extra></extra>",
             ))
 
             # Add baseline for this group

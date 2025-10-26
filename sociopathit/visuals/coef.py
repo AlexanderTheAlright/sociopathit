@@ -237,7 +237,7 @@ def coef_interactive(
                 text=[f"<b>{est:.2f}{stars}</b>" if sig else f"{est:.2f}"],
                 textposition="top center",
                 textfont=dict(size=14, color="#111111"),
-                hovertemplate=f"<b>{row[term_col]}</b><br>Estimate: {est:.3f}<br>95% CI: [{lo:.3f}, {hi:.3f}]<br>p = {p:.3f}<extra></extra>",
+                hovertemplate=f"<b>{row[term_col]}</b><br>Estimate: {est:.2f}<br>95% CI: [{lo:.2f}, {hi:.2f}]<br>p = {p:.2f}<extra></extra>",
                 showlegend=False,
             )
         )

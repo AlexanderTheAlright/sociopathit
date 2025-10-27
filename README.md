@@ -21,7 +21,7 @@ Sociopath-it is structured into five main modules, each named with the proper de
 ## Installation
 
 ```bash
-pip install git+https://github.com/AlexanderTheAlright/sociopathit.git
+pip install --force-reinstall --no-deps git+https://github.com/AlexanderTheAlright/sociopathit.git
 ```
 
 ---

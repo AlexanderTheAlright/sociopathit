@@ -87,7 +87,18 @@ def kde(
             ax.fill_between(x_range, density, alpha=0.3, color=color)
     else:
         # Multiple densities by group
-        groups = df[group].unique()
+        # Filter out groups with no meaningful data
+        def has_meaningful_data(vals):
+            if len(vals) < 2:  # Need at least 2 points for density
+                return False
+            if (vals.abs() < 1e-10).all():
+                return False
+            if vals.std() < 1e-10:
+                return vals.abs().mean() > 1e-10
+            return True
+
+        all_groups = df[group].unique()
+        groups = [g for g in all_groups if has_meaningful_data(df[df[group] == g][x].dropna())]
 
         if palette is None:
             groups_dict = {"positive": list(groups)}

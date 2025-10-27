@@ -49,8 +49,21 @@ def trend(
 
     # --- Color palette handling ---
     if group:
-        # Filter out groups with no data
-        unique_groups = [g for g in df[group].unique() if not df[df[group] == g][y].dropna().empty]
+        # Filter out groups with no meaningful data (all NaN, all zeros, or negligible values)
+        def has_meaningful_data(group_df, col):
+            vals = group_df[col].dropna()
+            if vals.empty:
+                return False
+            # Check if all values are effectively zero (within numerical precision)
+            if (vals.abs() < 1e-10).all():
+                return False
+            # Check if standard deviation is essentially zero (no variation)
+            if len(vals) > 1 and vals.std() < 1e-10:
+                # But keep if the constant value is meaningful
+                return vals.abs().mean() > 1e-10
+            return True
+
+        unique_groups = [g for g in df[group].unique() if has_meaningful_data(df[df[group] == g], y)]
         thirds = max(1, len(unique_groups) // 3)
         gdict = {
             "positive": list(unique_groups[:thirds]),
@@ -210,7 +223,19 @@ def trend_interactive(
 
     # Color palette
     if group:
-        metric = df.groupby(group)[y].mean()
+        # Filter out groups with no meaningful data
+        def has_meaningful_data(group_df, col):
+            vals = group_df[col].dropna()
+            if vals.empty:
+                return False
+            if (vals.abs() < 1e-10).all():
+                return False
+            if len(vals) > 1 and vals.std() < 1e-10:
+                return vals.abs().mean() > 1e-10
+            return True
+
+        unique_groups = [g for g in df[group].unique() if has_meaningful_data(df[df[group] == g], y)]
+        metric = df[df[group].isin(unique_groups)].groupby(group)[y].mean()
         thirds = max(1, len(metric) // 3)
         gdict = {"positive": list(metric.index[:thirds]),
                  "neutral": list(metric.index[thirds:2*thirds]),

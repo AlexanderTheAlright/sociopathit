@@ -87,7 +87,20 @@ def scatterplot(
 
     # ─── Palette logic ─────────────────────────────────────────────────────────
     if group and palette is None:
-        groups = df[group].dropna().unique().tolist()
+        # Filter out groups with no meaningful data
+        def has_meaningful_data(group_df, col_x, col_y):
+            vals_x = group_df[col_x].dropna()
+            vals_y = group_df[col_y].dropna()
+            # Need at least 2 points for meaningful scatter
+            if len(vals_x) < 2 or len(vals_y) < 2:
+                return False
+            # Check if all values are effectively zero
+            if (vals_x.abs() < 1e-10).all() and (vals_y.abs() < 1e-10).all():
+                return False
+            return True
+
+        all_groups = df[group].dropna().unique().tolist()
+        groups = [g for g in all_groups if has_meaningful_data(df[df[group] == g], x, y)]
         thirds = max(1, len(groups) // 3)
         g_dict = {
             "positive": groups[:thirds],

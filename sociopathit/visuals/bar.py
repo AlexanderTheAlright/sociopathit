@@ -116,8 +116,20 @@ def bar(
 
     elif orientation == "stacked":
         cols = [c for c in df.columns if c not in [x, y]]
-        # Filter out columns with no data (all zeros or NaN)
-        cols = [c for c in cols if df[c].notna().any() and (df[c] != 0).any()]
+        # Filter out columns with no meaningful data (all NaN, all zeros, or negligible values)
+        def has_meaningful_data(series):
+            vals = series.dropna()
+            if vals.empty:
+                return False
+            # Check if all values are effectively zero
+            if (vals.abs() < 1e-10).all():
+                return False
+            # Check if the total contribution is meaningful (> 0.01% of any bar)
+            if vals.sum() < 1e-10:
+                return False
+            return True
+
+        cols = [c for c in cols if has_meaningful_data(df[c])]
         bottom = np.zeros(len(df))
         for c in cols:
             vals = df[c].values

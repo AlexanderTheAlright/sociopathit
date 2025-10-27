@@ -90,8 +90,17 @@ def boxplot(
         labels = [y]
         single_var = True
     else:
-        # Multiple distributions by group
-        groups = df[x].unique()
+        # Multiple distributions by group - filter out groups with no meaningful data
+        def has_meaningful_data(vals):
+            if vals.empty:
+                return False
+            if (vals.abs() < 1e-10).all():
+                return False
+            if len(vals) > 1 and vals.std() < 1e-10:
+                return vals.abs().mean() > 1e-10
+            return True
+
+        groups = [g for g in df[x].unique() if has_meaningful_data(df[df[x] == g][y].dropna())]
         data = [df[df[x] == g][y].dropna() for g in groups]
         labels = list(groups)
         single_var = False
@@ -452,7 +461,17 @@ def boxplot_interactive(
         groups = [y]
         x_col = None
     else:
-        groups = sorted(df[x].unique())
+        # Filter out groups with no meaningful data
+        def has_meaningful_data(vals):
+            if vals.empty:
+                return False
+            if (vals.abs() < 1e-10).all():
+                return False
+            if len(vals) > 1 and vals.std() < 1e-10:
+                return vals.abs().mean() > 1e-10
+            return True
+
+        groups = sorted([g for g in df[x].unique() if has_meaningful_data(df[df[x] == g][y].dropna())])
         x_col = x
 
     groups_dict = {"positive": groups}

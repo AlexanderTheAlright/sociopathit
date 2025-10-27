@@ -98,24 +98,24 @@ def generate_semantic_palette(groups: dict, mode: str = None):
 
     if style == "fiery":
         cmaps = {"positive": cm.plasma, "neutral": cm.magma, "negative": cm.inferno}
-        ranges = {"positive": (0.4, 0.9), "neutral": (0.3, 0.6), "negative": (0.2, 0.7)}
+        ranges = {"positive": (0.3, 1.0), "neutral": (0.2, 0.7), "negative": (0.1, 0.8)}
 
     elif style == "sentiment":
         cmaps = {"positive": cm.Greens, "neutral": cm.Greys, "negative": cm.Reds_r}
-        ranges = {"positive": (0.5, 0.9), "neutral": (0.4, 0.7), "negative": (0.3, 0.8)}
+        ranges = {"positive": (0.4, 1.0), "neutral": (0.3, 0.8), "negative": (0.2, 0.9)}
 
     elif style == "plainjane":
         cmaps = {"positive": cm.Blues, "neutral": cm.Greys, "negative": cm.Reds}
-        ranges = {"positive": (0.4, 0.85), "neutral": (0.4, 0.6), "negative": (0.4, 0.85)}
+        ranges = {"positive": (0.3, 1.0), "neutral": (0.3, 0.7), "negative": (0.3, 1.0)}
 
     elif style == "reviewer3":
         # High contrast black and white first, then grayscale — perfect for publication
         cmaps = {"positive": cm.Greys, "neutral": cm.Greys, "negative": cm.Greys}
-        ranges = {"positive": (0.25, 0.85), "neutral": (0.25, 0.85), "negative": (0.25, 0.85)}
+        ranges = {"positive": (0.0, 1.0), "neutral": (0.0, 1.0), "negative": (0.0, 1.0)}
 
     else:  # viridis
         cmaps = {"positive": cm.viridis, "neutral": cm.viridis, "negative": cm.viridis}
-        ranges = {"positive": (0.2, 0.9), "neutral": (0.3, 0.7), "negative": (0.1, 0.6)}
+        ranges = {"positive": (0.0, 1.0), "neutral": (0.1, 0.9), "negative": (0.0, 0.8)}
 
     # Build palette
     for group, items in groups.items():
@@ -127,42 +127,45 @@ def generate_semantic_palette(groups: dict, mode: str = None):
               "negative" if g.startswith("neg") else "positive"
         cmap, (low, high) = cmaps[key], ranges[key]
 
-        # Special handling for reviewer3: use high contrast black/white first, then grayscale
-        if style == "reviewer3":
-            if len(items) == 1:
-                # Single item gets black
+        # High contrast handling for all styles
+        if len(items) == 1:
+            # Single item: use middle of range
+            palette[items[0]] = cmap((low + high) / 2)
+        elif len(items) == 2:
+            # Two items: ALWAYS use absolute extremes for maximum contrast
+            if style == "reviewer3":
+                palette[items[0]] = (0, 0, 0, 1)  # Pure black
+                palette[items[1]] = (0.95, 0.95, 0.95, 1)  # Near white (for visibility with borders)
+            else:
+                palette[items[0]] = cmap(0.0)  # Absolute start of colormap
+                palette[items[1]] = cmap(1.0)  # Absolute end of colormap
+        elif len(items) == 3:
+            # Three items: use extremes and middle
+            if style == "reviewer3":
+                palette[items[0]] = (0, 0, 0, 1)  # Pure black
+                palette[items[1]] = (0.5, 0.5, 0.5, 1)  # Medium gray
+                palette[items[2]] = (0.95, 0.95, 0.95, 1)  # Near white
+            else:
+                palette[items[0]] = cmap(0.0)  # Absolute start
+                palette[items[1]] = cmap(0.5)  # Middle
+                palette[items[2]] = cmap(1.0)  # Absolute end
+        elif len(items) == 4:
+            # Four items: evenly distributed across full range
+            if style == "reviewer3":
                 palette[items[0]] = (0, 0, 0, 1)
-            elif len(items) == 2:
-                # Two items get black and white with black border
-                palette[items[0]] = (0, 0, 0, 1)  # Black
-                palette[items[1]] = (1, 1, 1, 1)  # White
+                palette[items[1]] = (0.33, 0.33, 0.33, 1)
+                palette[items[2]] = (0.66, 0.66, 0.66, 1)
+                palette[items[3]] = (0.95, 0.95, 0.95, 1)
             else:
-                # Three or more: black, white, then grayscale
-                palette[items[0]] = (0, 0, 0, 1)  # Black
-                palette[items[1]] = (1, 1, 1, 1)  # White
-                # Remaining items use grayscale
-                vals = np.linspace(low, high, len(items) - 2)
-                for item, v in zip(items[2:], vals):
-                    palette[item] = cmap(v)
+                palette[items[0]] = cmap(0.0)
+                palette[items[1]] = cmap(0.33)
+                palette[items[2]] = cmap(0.67)
+                palette[items[3]] = cmap(1.0)
         else:
-            # High contrast for small numbers of discrete categories
-            if len(items) == 1:
-                # Single item: use middle of range
-                palette[items[0]] = cmap((low + high) / 2)
-            elif len(items) == 2:
-                # Two items: use extremes for maximum contrast
-                palette[items[0]] = cmap(low)
-                palette[items[1]] = cmap(high)
-            elif len(items) == 3:
-                # Three items: use low, middle, high
-                palette[items[0]] = cmap(low)
-                palette[items[1]] = cmap((low + high) / 2)
-                palette[items[2]] = cmap(high)
-            else:
-                # Four or more: standard linspace behavior
-                vals = np.linspace(low, high, len(items))
-                for item, v in zip(items, vals):
-                    palette[item] = cmap(v)
+            # Five or more: use the specified range with linspace
+            vals = np.linspace(low, high, len(items))
+            for item, v in zip(items, vals):
+                palette[item] = cmap(v)
     return palette
 
 

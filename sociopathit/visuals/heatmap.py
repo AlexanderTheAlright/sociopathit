@@ -42,13 +42,18 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
-    # Create heatmap with borders - disable default annotations if we want custom white-bordered ones
+    # Create heatmap with crisp borders and proper spacing
     corr_data = df.corr()
-    sns.heatmap(corr_data, cmap=cmap, annot=False, fmt=".2f",
-                cbar_kws={"shrink": 0.8}, center=0 if "Rd" in cmap else None,
-                vmin=-1 if "Rd" in cmap else None, vmax=1 if "Rd" in cmap else None,
-                linewidths=1.5, linecolor='white',  # Add cell borders
-                ax=ax)
+    hm = sns.heatmap(corr_data, cmap=cmap, annot=False, fmt=".2f",
+                     cbar_kws={"shrink": 0.8, "label": "Correlation"},
+                     center=0 if "Rd" in cmap else None,
+                     vmin=-1 if "Rd" in cmap else None, vmax=1 if "Rd" in cmap else None,
+                     linewidths=2.5, linecolor='white',  # Crisp cell borders with increased width
+                     ax=ax)
+
+    # Fix colorbar label orientation (rotate to face towards the bar, not away)
+    cbar = hm.collections[0].colorbar
+    cbar.set_label("Correlation", rotation=270, labelpad=20, fontsize=11, weight='bold')
 
     # Add custom white-bordered annotations if requested
     if annot:

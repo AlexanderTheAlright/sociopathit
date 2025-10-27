@@ -116,6 +116,8 @@ def bar(
 
     elif orientation == "stacked":
         cols = [c for c in df.columns if c not in [x, y]]
+        # Filter out columns with no data (all zeros or NaN)
+        cols = [c for c in cols if df[c].notna().any() and (df[c] != 0).any()]
         bottom = np.zeros(len(df))
         for c in cols:
             vals = df[c].values

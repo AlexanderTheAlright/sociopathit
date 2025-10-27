@@ -49,7 +49,8 @@ def trend(
 
     # --- Color palette handling ---
     if group:
-        unique_groups = df[group].unique()
+        # Filter out groups with no data
+        unique_groups = [g for g in df[group].unique() if not df[df[group] == g][y].dropna().empty]
         thirds = max(1, len(unique_groups) // 3)
         gdict = {
             "positive": list(unique_groups[:thirds]),
@@ -76,6 +77,7 @@ def trend(
 
     else:  # Line plot
         group_data = {}
+        label_positions = []  # Store label positions for collision detection
         if group:
             for g, dfg in df.groupby(group):
                 color = palette.get(g, "grey")
@@ -90,7 +92,30 @@ def trend(
 
                 if annotate:
                     last_val = ys[-1]
-                    ax.text(xs[-1], last_val, f"{last_val:.2f}",
+                    label_positions.append((g, xs[-1], last_val, color))
+
+            # Apply dynamic offset to prevent overlapping labels
+            if annotate and label_positions:
+                # Sort by y-value to detect overlaps
+                label_positions.sort(key=lambda p: p[2])
+                adjusted_positions = []
+                y_range = ax.get_ylim()[1] - ax.get_ylim()[0]
+                min_spacing = y_range * 0.04  # Minimum 4% of y-range between labels
+
+                for i, (g, x_pos, y_pos, color) in enumerate(label_positions):
+                    adjusted_y = y_pos
+                    # Check for collision with previous labels
+                    for prev_y in adjusted_positions:
+                        if abs(adjusted_y - prev_y) < min_spacing:
+                            # Shift label up or down to avoid overlap
+                            if adjusted_y < prev_y:
+                                adjusted_y = prev_y - min_spacing
+                            else:
+                                adjusted_y = prev_y + min_spacing
+                    adjusted_positions.append(adjusted_y)
+
+                    # Draw the label at adjusted position
+                    ax.text(x_pos, adjusted_y, f"{y_pos:.2f}",
                             ha="left", va="center", fontsize=10, color="black", weight="bold",
                             bbox=dict(facecolor="white", edgecolor='#333333', linewidth=1.5,
                                       boxstyle="round,pad=0.3", alpha=0.95))
@@ -119,6 +144,21 @@ def trend(
                     rotation=90, va="top", ha="right", fontsize=9, color="black", weight="bold",
                     bbox=dict(facecolor="white", edgecolor='#333333', linewidth=1.5,
                               boxstyle="round,pad=0.3", alpha=0.95))
+
+    # --- Widen y-axis window to avoid misleading narrow ranges ---
+    y_min, y_max = ax.get_ylim()
+    y_range = y_max - y_min
+
+    # Add 15% padding on each side for better context
+    padding = y_range * 0.15
+    ax.set_ylim(y_min - padding, y_max + padding)
+
+    # For proportions/percentages (values between 0-1), ensure we show meaningful context
+    if y_max <= 1.0 and y_min >= 0:
+        # If the range is very narrow (less than 20% of full scale), widen to at least 30%
+        if y_range < 0.2:
+            center = (y_min + y_max) / 2
+            ax.set_ylim(max(0, center - 0.15), min(1.0, center + 0.15))
 
     # --- Styling ---
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")

@@ -165,11 +165,15 @@ def boxplot(
         ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
         if x:
             ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
+        # Ensure tick positions match violin/box positions
+        ax.set_xticks(range(len(labels)))
         ax.set_xticklabels(labels, rotation=45 if len(labels) > 5 else 0, ha='right' if len(labels) > 5 else 'center')
     else:
         ax.set_xlabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
         if x:
             ax.set_ylabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
+        # Ensure tick positions match violin/box positions
+        ax.set_yticks(range(len(labels)))
         ax.set_yticklabels(labels)
 
     ax.grid(axis="y" if orientation == "vertical" else "x", linestyle=":", color="grey", linewidth=0.7)
@@ -323,9 +327,12 @@ def boxplot_subplots(
 
             if orientation == "vertical":
                 ax.set_ylabel(y_var.replace("_", " ").title(), fontsize=11, weight="bold")
+                ax.set_xticks(range(len(labels)))
                 ax.set_xticklabels(labels, rotation=45 if len(labels) > 3 else 0)
             else:
                 ax.set_xlabel(y_var.replace("_", " ").title(), fontsize=11, weight="bold")
+                ax.set_yticks(range(len(labels)))
+                ax.set_yticklabels(labels)
 
             ax.grid(axis="y" if orientation == "vertical" else "x", linestyle=":", color="grey", linewidth=0.7)
             ax.spines["top"].set_visible(False)
@@ -375,11 +382,13 @@ def boxplot_subplots(
                         patch.set_alpha(0.7)
 
                 if orientation == "vertical":
+                    ax.set_xticks(range(len(labels)))
                     if row_idx == n_rows - 1:
                         ax.set_xticklabels(labels, rotation=45 if len(labels) > 3 else 0)
                     if col_idx == 0:
                         ax.set_ylabel(y.replace("_", " ").title(), fontsize=11, weight="bold")
                 else:
+                    ax.set_yticks(range(len(labels)))
                     if col_idx == 0:
                         ax.set_yticklabels(labels)
                     if row_idx == n_rows - 1:

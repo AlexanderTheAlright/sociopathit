@@ -145,10 +145,24 @@ def generate_semantic_palette(groups: dict, mode: str = None):
                 for item, v in zip(items[2:], vals):
                     palette[item] = cmap(v)
         else:
-            # Standard behavior for other styles
-            vals = np.linspace(low, high, len(items))
-            for item, v in zip(items, vals):
-                palette[item] = cmap(v)
+            # High contrast for small numbers of discrete categories
+            if len(items) == 1:
+                # Single item: use middle of range
+                palette[items[0]] = cmap((low + high) / 2)
+            elif len(items) == 2:
+                # Two items: use extremes for maximum contrast
+                palette[items[0]] = cmap(low)
+                palette[items[1]] = cmap(high)
+            elif len(items) == 3:
+                # Three items: use low, middle, high
+                palette[items[0]] = cmap(low)
+                palette[items[1]] = cmap((low + high) / 2)
+                palette[items[2]] = cmap(high)
+            else:
+                # Four or more: standard linspace behavior
+                vals = np.linspace(low, high, len(items))
+                for item, v in zip(items, vals):
+                    palette[item] = cmap(v)
     return palette
 
 

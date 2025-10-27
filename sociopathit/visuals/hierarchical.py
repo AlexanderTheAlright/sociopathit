@@ -143,7 +143,7 @@ def treemap(
 
         # Add label with white-bordered background if rectangle is large enough
         if w > 0.1 and h > 0.1:
-            ax.text(x + w/2, y + h/2, f"{label}\n{value:.0f}",
+            ax.text(x + w/2, y + h/2, f"{label}\n{value:.2f}",
                    ha='center', va='center', fontsize=10, weight='bold', color='black',
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 

@@ -111,7 +111,7 @@ def bar(
         ax.set_ylabel("")
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
-                ax.text(val + (df[y].max() * 0.015), i, f"{val:,}", va="center", fontsize=9, color="black", weight="bold",
+                ax.text(val + (df[y].max() * 0.015), i, f"{val:,.2f}", va="center", fontsize=9, color="black", weight="bold",
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
     elif orientation == "stacked":
@@ -144,7 +144,7 @@ def bar(
 
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
-                ax.text(i, val + (df[y].max() * 0.03), f"{val:,}", ha="center", fontsize=9, color="black", weight="bold",
+                ax.text(i, val + (df[y].max() * 0.03), f"{val:,.2f}", ha="center", fontsize=9, color="black", weight="bold",
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
         # ─────────────────────────────────────────────
@@ -340,7 +340,7 @@ def bar_subplots(
                 # Annotations
                 for i, val in enumerate(plot_df[y_var]):
                     if not np.isnan(val):
-                        ax.text(val + (plot_df[y_var].max() * 0.015), i, f"{val:,.0f}",
+                        ax.text(val + (plot_df[y_var].max() * 0.015), i, f"{val:,.2f}",
                                va="center", fontsize=9, color="black", weight="bold",
                                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
             else:
@@ -350,7 +350,7 @@ def bar_subplots(
                 # Annotations
                 for i, val in enumerate(plot_df[y_var]):
                     if not np.isnan(val):
-                        ax.text(i, val + (plot_df[y_var].max() * 0.03), f"{val:,.0f}",
+                        ax.text(i, val + (plot_df[y_var].max() * 0.03), f"{val:,.2f}",
                                ha="center", fontsize=9, color="black", weight="bold",
                                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
@@ -395,7 +395,7 @@ def bar_subplots(
                     # Annotations
                     for i, val in enumerate(plot_df[y]):
                         if not np.isnan(val):
-                            ax.text(val + (plot_df[y].max() * 0.015), i, f"{val:,.0f}",
+                            ax.text(val + (plot_df[y].max() * 0.015), i, f"{val:,.2f}",
                                    va="center", fontsize=9, color="black", weight="bold",
                                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
                 else:
@@ -409,7 +409,7 @@ def bar_subplots(
                     # Annotations
                     for i, val in enumerate(plot_df[y]):
                         if not np.isnan(val):
-                            ax.text(i, val + (plot_df[y].max() * 0.03), f"{val:,.0f}",
+                            ax.text(i, val + (plot_df[y].max() * 0.03), f"{val:,.2f}",
                                    ha="center", fontsize=9, color="black", weight="bold",
                                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
@@ -564,7 +564,7 @@ def bar_interactive(
                 fig.add_annotation(
                     x=val,
                     y=df[x].iloc[i],
-                    text=f"<b>{val:.0f}</b>",
+                    text=f"<b>{val:.2f}</b>",
                     showarrow=False,
                     xanchor="left",
                     yanchor="middle",
@@ -580,7 +580,7 @@ def bar_interactive(
                 fig.add_annotation(
                     x=df[x].iloc[i],
                     y=val,
-                    text=f"<b>{val:.0f}</b>",
+                    text=f"<b>{val:.2f}</b>",
                     showarrow=False,
                     yanchor="bottom",
                     font=dict(size=10, color="black", family="Arial Black"),

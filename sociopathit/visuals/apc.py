@@ -164,7 +164,7 @@ def _apc_rectangular(
 ):
     """Create rectangular APC heatmap."""
 
-    fig, ax = plt.subplots(figsize=(10, 8), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 6), dpi=130)
 
     data = np.array(data)
 
@@ -331,7 +331,7 @@ def _apc_hexagonal(
 ):
     """Create hexagonal Lexis diagram for APC analysis."""
 
-    fig, ax = plt.subplots(figsize=(12, 10), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 6), dpi=130)
 
     # Flatten data if needed
     if isinstance(data, np.ndarray) and len(data.shape) == 2:

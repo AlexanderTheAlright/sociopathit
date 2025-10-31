@@ -82,9 +82,10 @@ DIR_PROCESSED = PROJECT_ROOT / "processed"
 META_FILE = PROJECT_ROOT / "metaset.xlsx"
 CACHE_FILE = PROJECT_ROOT / ".metadata_cache.json"
 
-# Create directories (only those actively used)
-for p in (DIR_UNPROCESSED, DIR_PROCESSED):
-    p.mkdir(parents=True, exist_ok=True)
+# Directories will be created on-demand when harmonize() is called
+# Removed automatic directory creation to avoid cluttering user workspaces
+# for p in (DIR_UNPROCESSED, DIR_PROCESSED):
+#     p.mkdir(parents=True, exist_ok=True)
 
 # Stata limits
 _MAX_STATA_CAT = 32_000
@@ -1021,6 +1022,10 @@ class DatasetHarmonizer:
 def harmonize_all():
     """Main harmonization pipeline."""
     logger.info("═══ Harmonization Pipeline Start ═══")
+
+    # Create directories on-demand (only when actually running harmonization)
+    for p in (DIR_UNPROCESSED, DIR_PROCESSED):
+        p.mkdir(parents=True, exist_ok=True)
 
     # Load metadata
     meta = MetadataManager(META_FILE)

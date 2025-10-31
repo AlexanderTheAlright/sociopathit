@@ -86,7 +86,7 @@ def bar(
     # Styling setup
     # ─────────────────────────────────────────────
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -141,9 +141,9 @@ def bar(
             frameon=True,
             facecolor="white",
             edgecolor="grey",
-            fontsize=10,
+            fontsize=12,
             title="Categories",
-            title_fontsize=11,
+            title_fontsize=13,
         )
         legend.get_title().set_fontweight("bold")
         legend.get_frame().set_linewidth(1.5)

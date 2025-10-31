@@ -25,7 +25,7 @@ def factormap(
     subtitle=None,
     style_mode="viridis",
     label_filter=30,
-    figsize=(12, 10),
+    figsize=(7, 6),
     label_suffix_map=None,
     active_label="Active Variables",
     sup_label="Supplementary Variables",

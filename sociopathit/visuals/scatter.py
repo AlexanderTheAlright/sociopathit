@@ -44,7 +44,7 @@ def scatterplot(
     legend_title=None,
     alpha=0.8,
     s=50,
-    figsize=(8, 6),
+    figsize=(7, 5),
     style_mode="viridis",
 ):
     """
@@ -74,7 +74,7 @@ def scatterplot(
         Marker transparency.
     s : int, default 50
         Marker size.
-    figsize : tuple, default (8, 6)
+    figsize : tuple, default (7, 5)
         Figure size.
     style_mode : str, default 'viridis'
         One of {'fiery','viridis','sentiment','plainjane','reviewer3'}.
@@ -172,8 +172,9 @@ def scatterplot(
                                 color=palette["default"], alpha=0.15)
 
     # ─── Axis aesthetics ──────────────────────────────────────────────────────
-    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
-    ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
+    ax.set_xlabel(x.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
+    ax.set_ylabel(y.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
+    ax.tick_params(axis='both', which='major', labelsize=12)
     ax.grid(axis="y", color="grey", linestyle=":", linewidth=0.7)
     ax.set_axisbelow(True)
     for side in ["top", "right"]:
@@ -187,8 +188,8 @@ def scatterplot(
             title=leg_title,
             bbox_to_anchor=(1.02, 1.0),
             loc="upper left",
-            fontsize=10,
-            title_fontsize=11,
+            fontsize=13,
+            title_fontsize=14,
             frameon=True,
             facecolor="white",
             edgecolor="grey",

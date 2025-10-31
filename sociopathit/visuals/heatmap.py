@@ -41,7 +41,7 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
     if cmap is None:
         cmap = get_continuous_cmap(style_mode)
 
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 6), dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -69,9 +69,9 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
                                 edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
-    # Bold axis labels
-    ax.set_xticklabels(ax.get_xticklabels(), fontsize=11, fontweight='bold', color='black')
-    ax.set_yticklabels(ax.get_yticklabels(), fontsize=11, fontweight='bold', color='black', rotation=0)
+    # Bold axis labels with larger fonts for documents
+    ax.set_xticklabels(ax.get_xticklabels(), fontsize=12, fontweight='bold', color='black')
+    ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, fontweight='bold', color='black', rotation=0)
 
     apply_titles(fig, title or "Correlation Heatmap", subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))

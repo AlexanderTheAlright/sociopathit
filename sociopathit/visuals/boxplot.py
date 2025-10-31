@@ -79,7 +79,7 @@ def boxplot(
     fig, ax : matplotlib figure and axes
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 

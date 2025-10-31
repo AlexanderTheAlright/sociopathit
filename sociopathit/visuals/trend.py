@@ -30,7 +30,7 @@ def trend(
     title="Trend Over Time",
     subtitle=None,
     style_mode="viridis",
-    figsize=(10, 6),
+    figsize=(7, 5),
     marker="o",
     smooth=False,
     annotate=True,
@@ -187,8 +187,8 @@ def trend(
             frameon=True,
             facecolor="white",
             edgecolor="grey",
-            fontsize=10,
-            title_fontsize=11,
+            fontsize=12,
+            title_fontsize=13,
         )
         legend.get_title().set_fontweight("bold")
         legend.get_frame().set_linewidth(1.5)

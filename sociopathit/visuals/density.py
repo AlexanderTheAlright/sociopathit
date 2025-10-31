@@ -70,7 +70,7 @@ def kde(
     fig, ax : matplotlib figure and axes
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(10, 6), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -116,10 +116,11 @@ def kde(
                 if fill:
                     ax.fill_between(x_range, density, alpha=0.3, color=color)
 
-        ax.legend(frameon=True, facecolor="white", edgecolor="grey", fontsize=10)
+        ax.legend(frameon=True, facecolor="white", edgecolor="grey", fontsize=13, title_fontsize=14)
 
-    ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
-    ax.set_ylabel("Density", fontsize=12, weight="bold", color="black")
+    ax.set_xlabel(x.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
+    ax.set_ylabel("Density", fontsize=14, weight="bold", color="black")
+    ax.tick_params(axis='both', which='major', labelsize=12)
     ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -281,7 +282,7 @@ def raincloud(
     fig, ax : matplotlib figure and axes
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(12, 6), dpi=130)
+    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 

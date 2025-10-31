@@ -201,7 +201,6 @@ def trend(
         fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
     else:
         fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 

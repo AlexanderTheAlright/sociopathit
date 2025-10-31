@@ -322,7 +322,6 @@ def dag(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig
 
 

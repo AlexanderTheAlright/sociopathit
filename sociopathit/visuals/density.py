@@ -127,7 +127,6 @@ def kde(
 
     apply_titles(fig, title or f"Density Plot: {x}", subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -231,7 +230,6 @@ def ridgeline(
 
     apply_titles(fig, title or f"Ridgeline Plot: {x} by {group}", subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -332,7 +330,6 @@ def raincloud(
 
     apply_titles(fig, title or f"Raincloud Plot: {y} by {x}", subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 

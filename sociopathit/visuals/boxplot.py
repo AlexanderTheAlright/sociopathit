@@ -192,7 +192,6 @@ def boxplot(
     plot_type = "Violin" if violin else "Box"
     apply_titles(fig, title or f"{plot_type} Plot: {y}", subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -410,7 +409,6 @@ def boxplot_subplots(
 
     apply_titles(fig, title, subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, axes
 
 

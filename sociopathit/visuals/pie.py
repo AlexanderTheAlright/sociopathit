@@ -148,7 +148,6 @@ def pie(
     )
 
     fig.tight_layout(rect=[0, 0, 1, 0.94])
-    plt.show()
     return fig, ax
 
 

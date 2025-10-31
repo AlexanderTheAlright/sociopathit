@@ -142,7 +142,6 @@ def pair(
 
     apply_titles(fig, title or "Pair Plot", subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.95 if subtitle else 0.97))
-    plt.show()
     return fig, axes
 
 

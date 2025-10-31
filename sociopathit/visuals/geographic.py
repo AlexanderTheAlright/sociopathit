@@ -135,7 +135,6 @@ def point_map(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig
 
 
@@ -433,5 +432,4 @@ def hexbin_map(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig

@@ -161,7 +161,6 @@ def treemap(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig
 
 
@@ -336,7 +335,6 @@ def sunburst(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig
 
 

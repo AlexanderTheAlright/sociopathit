@@ -207,7 +207,6 @@ def waterfall(
                  subtitle)
 
     fig.tight_layout(rect=(0, 0, 1, 0.90 if subtitle else 0.94))
-    plt.show()
 
     return fig, ax
 

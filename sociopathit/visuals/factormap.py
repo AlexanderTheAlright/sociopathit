@@ -186,7 +186,6 @@ def factormap(
     apply_titles(fig, title, subtitle, n=len(active))
     plt.subplots_adjust(right=0.82, left=0.12, bottom=0.12, top=0.92)
     fig.tight_layout(rect=(0.08, 0.08, 0.85, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -414,7 +413,6 @@ def factormap_3d(
     # Adjust layout - increase plot space, reduce margins
     plt.subplots_adjust(left=0.05, right=0.85, top=0.92, bottom=0.05)
     plt.tight_layout(rect=(0, 0, 0.88, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -673,7 +671,6 @@ def variance_explained(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig, ax
 
 

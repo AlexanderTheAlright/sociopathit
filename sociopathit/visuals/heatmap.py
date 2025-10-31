@@ -75,7 +75,6 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
 
     apply_titles(fig, title or "Correlation Heatmap", subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -298,7 +297,6 @@ def heatmap_distribution(
 
     apply_titles(fig, title or "Distribution Heatmap", subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 

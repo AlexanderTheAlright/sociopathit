@@ -160,11 +160,10 @@ def cooccur(
                 zorder=5,
             )
 
-        ax.set_title(f"‘{central}’ — Top {max_neighbors} Neighbors",
+        ax.set_title(f"'{central}' — Top {max_neighbors} Neighbors",
                      fontsize=12, fontweight="bold", color="#333333", pad=6)
 
     plt.tight_layout(rect=(0, 0, 1, 0.96))
-    plt.show()
 
 
 # ══════════════════════════════════════════════════════════════════════════════

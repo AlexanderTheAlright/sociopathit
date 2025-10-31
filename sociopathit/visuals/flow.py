@@ -112,7 +112,6 @@ def sankey(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig
 
 
@@ -271,7 +270,6 @@ def alluvial(
     if output_path:
         fig.savefig(output_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
     return fig
 
 

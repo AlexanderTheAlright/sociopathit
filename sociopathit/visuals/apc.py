@@ -317,7 +317,6 @@ def _apc_rectangular(
     else:
         fig.tight_layout(rect=(0, 0, 1, 0.9 if has_subtitle else 0.94))
 
-    plt.show()
     return fig, ax
 
 
@@ -528,7 +527,6 @@ def _apc_hexagonal(
     has_subtitle = bool(subtitle and str(subtitle).strip())
     plt.tight_layout(rect=(0, 0, 0.88, 0.9 if has_subtitle else 0.94))
 
-    plt.show()
     return fig, ax
 
 

@@ -78,7 +78,6 @@ def cluster(
     ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
     apply_titles(fig, title or "Hierarchical Cluster Dendrogram", subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
-    plt.show()
     return fig, ax
 
 
@@ -238,7 +237,6 @@ def heatmap_cluster(
             va="top",
         )
 
-    plt.show()
     return fig, g.ax_heatmap
 
 

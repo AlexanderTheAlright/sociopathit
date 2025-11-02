@@ -28,6 +28,7 @@ try:
         generate_semantic_palette,
         apply_titles,
         COLORS_DICT,
+        format_tick_labels,
     )
 except ImportError:
     def set_style(*args, **kwargs):
@@ -150,6 +151,8 @@ def treemap(
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis('off')
+
+    # No tick labels needed for treemap (axis is off)
 
     # Title
     if title or subtitle:
@@ -324,6 +327,8 @@ def sunburst(
     ax.set_xticklabels([])
     ax.spines['polar'].set_visible(False)
     ax.grid(False)
+
+    # No tick labels needed for sunburst (polar plot with no ticks)
 
     # Title
     if title or subtitle:

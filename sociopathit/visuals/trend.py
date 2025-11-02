@@ -198,7 +198,7 @@ def trend(
     apply_titles(fig, title, subtitle)
 
     # Format tick labels: bold and angled
-    format_tick_labels(ax, rotation_x=45)
+    format_tick_labels(ax)
 
     # Adjust layout based on whether legend is present
     if group:

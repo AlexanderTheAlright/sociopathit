@@ -28,6 +28,7 @@ try:
         generate_semantic_palette,
         apply_titles,
         COLORS_DICT,
+        format_tick_labels,
     )
 except ImportError:
     def set_style(*args, **kwargs):

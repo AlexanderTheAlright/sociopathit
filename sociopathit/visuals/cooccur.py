@@ -22,7 +22,7 @@ from collections import Counter
 from matplotlib.colors import Normalize
 from matplotlib import cm
 
-from ..utils.style import set_style, apply_titles
+from ..utils.style import set_style, apply_titles, format_tick_labels
 
 
 # ══════════════════════════════════════════════════════════════════════════════

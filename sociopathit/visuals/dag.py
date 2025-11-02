@@ -34,6 +34,7 @@ try:
         apply_titles,
         COLORS_DICT,
         get_color,
+        format_tick_labels,
     )
 except ImportError:
     def set_style(*args, **kwargs):

@@ -17,7 +17,7 @@ import plotly.graph_objects as go
 from matplotlib.colors import Normalize
 from matplotlib import cm
 
-from ..utils.style import set_style, generate_semantic_palette, apply_titles
+from ..utils.style import set_style, generate_semantic_palette, apply_titles, format_tick_labels
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Helper for significance stars
@@ -149,6 +149,10 @@ def coef(
         ax.spines[s].set_color("grey")
 
     apply_titles(fig, title, subtitle, n=len(df))
+
+    # Format tick labels: bold (no rotation for coefficient plots)
+    format_tick_labels(ax, rotation_x=0)
+
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 

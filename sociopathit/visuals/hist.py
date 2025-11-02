@@ -179,7 +179,7 @@ def histogram(
     has_subtitle = bool(subtitle and str(subtitle).strip())
 
     # Format tick labels: bold and angled
-    format_tick_labels(ax, rotation_x=45)
+    format_tick_labels(ax)
 
     if show_legend:
         fig.tight_layout(rect=(0, 0, 0.85, 0.9 if has_subtitle else 0.94))

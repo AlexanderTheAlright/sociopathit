@@ -20,7 +20,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 try:
-    from ..utils.style import apply_titles, COLORS_DICT
+    from ..utils.style import apply_titles, COLORS_DICT, format_tick_labels
 except ImportError:
     def apply_titles(*args, **kwargs):
         pass

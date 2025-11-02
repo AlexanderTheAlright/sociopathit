@@ -17,7 +17,7 @@ import numpy as np
 import seaborn as sns
 import plotly.figure_factory as ff
 from scipy.cluster.hierarchy import linkage, dendrogram
-from ..utils.style import set_style, apply_titles, generate_semantic_palette, get_continuous_cmap
+from ..utils.style import set_style, apply_titles, generate_semantic_palette, get_continuous_cmap, format_tick_labels
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -77,6 +77,10 @@ def cluster(
     ax.spines["right"].set_visible(False)
     ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
     apply_titles(fig, title or "Hierarchical Cluster Dendrogram", subtitle)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax)
+
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 

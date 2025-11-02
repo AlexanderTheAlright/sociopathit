@@ -20,6 +20,7 @@ from ..utils.style import (
     generate_semantic_palette,
     apply_titles,
     get_data_element_kwargs,
+    format_tick_labels,
 )
 
 
@@ -126,6 +127,10 @@ def kde(
     ax.spines["right"].set_visible(False)
 
     apply_titles(fig, title or f"Density Plot: {x}", subtitle, n=n)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax)
+
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 
@@ -229,6 +234,10 @@ def ridgeline(
     ax.spines["right"].set_visible(False)
 
     apply_titles(fig, title or f"Ridgeline Plot: {x} by {group}", subtitle, n=n)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax)
+
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 
@@ -329,6 +338,10 @@ def raincloud(
     ax.spines["right"].set_visible(False)
 
     apply_titles(fig, title or f"Raincloud Plot: {y} by {x}", subtitle, n=n)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax)
+
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 

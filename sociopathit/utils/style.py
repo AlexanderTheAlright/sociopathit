@@ -114,16 +114,16 @@ def set_style(mode: str = "viridis"):
     ACTIVE_STYLE = mode
 
 
-def format_tick_labels(ax, rotation_x=45, bold=True):
+def format_tick_labels(ax, rotation_x=0, bold=True):
     """
-    Apply Sociopath-it tick label formatting: bold text and angled x-labels.
+    Apply Sociopath-it tick label formatting: bold text with optional rotation.
 
     Parameters
     ----------
     ax : matplotlib.axes.Axes
         The axes to format
     rotation_x : int or float
-        Rotation angle for x-tick labels (default 45°)
+        Rotation angle for x-tick labels (default 0° for horizontal)
     bold : bool
         Whether to make labels bold (default True)
     """
@@ -349,7 +349,7 @@ def apply_titles(fig, title=None, subtitle=None, n=None):
 
 def get_data_element_kwargs():
     """Return default kwargs for Sociopath-it data elements."""
-    return {"edgecolor": "white", "linewidth": 0.5}
+    return {"edgecolor": "black", "linewidth": 1.0}
 
 
 # ══════════════════════════════════════════════════════════════════════════════

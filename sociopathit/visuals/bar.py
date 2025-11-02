@@ -211,8 +211,8 @@ def bar(
     ax.spines["right"].set_visible(False)
     apply_titles(fig, title or f"{y.title()} by {x.title()}", subtitle, n=n)
 
-    # Format tick labels: bold and angled
-    format_tick_labels(ax, rotation_x=45 if orientation != "horizontal" else 0)
+    # Format tick labels: bold
+    format_tick_labels(ax)
 
     # Adjust layout based on orientation (stacked has legend on right)
     if orientation == "stacked":

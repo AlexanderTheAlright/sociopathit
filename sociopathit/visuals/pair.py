@@ -15,6 +15,7 @@ from ..utils.style import (
     set_style,
     generate_semantic_palette,
     apply_titles,
+    format_tick_labels,
 )
 
 
@@ -139,6 +140,14 @@ def pair(
         if handles:
             fig.legend(handles, labels, loc='upper right', bbox_to_anchor=(0.98, 0.98),
                       frameon=True, facecolor='white', edgecolor='grey', fontsize=10)
+
+    # Format tick labels
+    for ax_row in axes if n_vars > 1 else [axes]:
+        if isinstance(ax_row, np.ndarray):
+            for ax in ax_row:
+                format_tick_labels(ax)
+        else:
+            format_tick_labels(ax_row)
 
     apply_titles(fig, title or "Pair Plot", subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.95 if subtitle else 0.97))

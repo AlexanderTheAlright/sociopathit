@@ -149,7 +149,7 @@ def pair(
         else:
             format_tick_labels(ax_row)
 
-    apply_titles(fig, title or "Pair Plot", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
     fig.tight_layout(rect=(0, 0, 1, 0.95 if subtitle else 0.97))
     return fig, axes
 

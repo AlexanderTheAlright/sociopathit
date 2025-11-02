@@ -21,7 +21,7 @@ from ..utils.style import set_style, apply_titles, get_color, format_tick_labels
 def factormap(
     active_coords,
     sup_coords=None,
-    title="Factor Map",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     label_filter=30,
@@ -196,7 +196,7 @@ def factormap(
 def factormap_interactive(
     active_coords,
     sup_coords=None,
-    title="Factor Map",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     label_filter=30,
@@ -279,7 +279,7 @@ def factormap_interactive(
 def factormap_3d(
     coords,
     sup_coords=None,
-    title="3D Factor Map",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     label_filter=20,
@@ -426,7 +426,7 @@ def factormap_3d(
 def factormap_3d_interactive(
     coords,
     sup_coords=None,
-    title="3D Factor Map",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     active_label="Active Variables",
@@ -543,7 +543,7 @@ def factormap_3d_interactive(
 def variance_explained(
     variance_ratios,
     n_components=None,
-    title="Variance Explained by Components",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     figsize=(10, 6),
@@ -684,7 +684,7 @@ def variance_explained(
 def variance_explained_interactive(
     variance_ratios,
     n_components=None,
-    title="Variance Explained by Components",
+    title=None,
     subtitle=None,
     style_mode="viridis",
 ):

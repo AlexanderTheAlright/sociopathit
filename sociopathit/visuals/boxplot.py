@@ -170,6 +170,28 @@ def boxplot(
                     ax.scatter(d, x_vals, alpha=point_alpha, s=20, color=color,
                               edgecolors='black', linewidth=0.5, zorder=3)
 
+    # ─── Widen y-axis window to avoid misleading narrow ranges ───────────────
+    if orientation == "vertical":
+        y_min, y_max = ax.get_ylim()
+        y_range = y_max - y_min
+
+        # Add 20% padding on each side for better context
+        padding = y_range * 0.20
+        ax.set_ylim(y_min - padding, y_max + padding)
+
+        # For proportions/percentages (values between 0-100), ensure meaningful context
+        if y_max <= 100.0 and y_min >= 0:
+            if y_range < 20:  # Less than 20 percentage points
+                center = (y_min + y_max) / 2
+                new_min = max(0, center - 15)
+                new_max = min(100.0, center + 15)
+                ax.set_ylim(new_min, new_max)
+        # For proportions (0-1 scale)
+        elif y_max <= 1.0 and y_min >= 0:
+            if y_range < 0.2:
+                center = (y_min + y_max) / 2
+                ax.set_ylim(max(0, center - 0.15), min(1.0, center + 0.15))
+
     # Labels and styling
     if orientation == "vertical":
         ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
@@ -191,7 +213,7 @@ def boxplot(
     ax.spines["right"].set_visible(False)
 
     plot_type = "Violin" if violin else "Box"
-    apply_titles(fig, title or f"{plot_type} Plot: {y}", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # Format tick labels: bold and angled
     format_tick_labels(ax if orientation == "vertical" else 0)

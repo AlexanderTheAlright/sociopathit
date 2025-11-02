@@ -281,8 +281,7 @@ def _apc_rectangular(
         ax2.spines[side].set_visible(False)
 
     # ─── Titles ────────────────────────────────────────────────────────────────
-    default_title = "Age-Period-Cohort Analysis"
-    apply_titles(fig, title or default_title, subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # ─── Legend ────────────────────────────────────────────────────────────────
     if show_legend:
@@ -497,8 +496,7 @@ def _apc_hexagonal(
     cbar.ax.tick_params(labelsize=9, colors='black')
 
     # ─── Titles ────────────────────────────────────────────────────────────────
-    default_title = "Age-Period-Cohort Lexis Diagram"
-    apply_titles(fig, title or default_title, subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # ─── Legend ────────────────────────────────────────────────────────────────
     if show_legend:

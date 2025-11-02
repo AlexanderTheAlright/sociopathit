@@ -21,7 +21,7 @@ from ..utils.style import set_style, apply_titles, format_tick_labels
 def pie(
     df,
     category_col,
-    title="Distribution of Categories",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     value_col=None,
@@ -154,7 +154,7 @@ def pie(
 def pie_interactive(
     df,
     category_col,
-    title="Distribution of Categories",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     value_col=None,

@@ -132,6 +132,14 @@ def histogram(
         for thresh in thresholds:
             ax.axvline(thresh, color=get_color('threshold', style_mode), linestyle="--", linewidth=1.5, alpha=0.8, zorder=4)
 
+    # ─── Widen y-axis window to avoid misleading narrow ranges ───────────────
+    y_min, y_max = ax.get_ylim()
+    y_range = y_max - y_min
+
+    # Add 20% padding on top for better context
+    padding = y_range * 0.20
+    ax.set_ylim(y_min, y_max + padding)
+
     # ─── Axis styling ───────────────────────────────────────────────────────────
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.set_ylabel("Frequency", fontsize=12, weight="bold", color="black")
@@ -140,7 +148,7 @@ def histogram(
         ax.spines[side].set_visible(False)
 
     # ─── Titles ────────────────────────────────────────────────────────────────
-    apply_titles(fig, title or f"Distribution of {x.replace('_',' ').title()}", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # ─── Legend ────────────────────────────────────────────────────────────────
     if show_legend:

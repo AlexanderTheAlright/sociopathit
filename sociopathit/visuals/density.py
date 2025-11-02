@@ -119,6 +119,14 @@ def kde(
 
         ax.legend(frameon=True, facecolor="white", edgecolor="grey", fontsize=13, title_fontsize=14)
 
+    # ─── Widen y-axis window to avoid misleading narrow ranges ───────────────
+    y_min, y_max = ax.get_ylim()
+    y_range = y_max - y_min
+
+    # Add 20% padding on top for better context (keep bottom at 0)
+    padding = y_range * 0.20
+    ax.set_ylim(y_min, y_max + padding)
+
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
     ax.set_ylabel("Density", fontsize=14, weight="bold", color="black")
     ax.tick_params(axis='both', which='major', labelsize=12)
@@ -126,7 +134,7 @@ def kde(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    apply_titles(fig, title or f"Density Plot: {x}", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
@@ -233,7 +241,7 @@ def ridgeline(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    apply_titles(fig, title or f"Ridgeline Plot: {x} by {group}", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
@@ -337,7 +345,7 @@ def raincloud(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    apply_titles(fig, title or f"Raincloud Plot: {y} by {x}", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)

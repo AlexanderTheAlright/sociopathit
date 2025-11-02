@@ -76,7 +76,7 @@ def cluster(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
-    apply_titles(fig, title or "Hierarchical Cluster Dendrogram", subtitle)
+    apply_titles(fig, title, subtitle)
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)

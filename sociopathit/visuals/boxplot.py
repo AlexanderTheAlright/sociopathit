@@ -20,6 +20,7 @@ from ..utils.style import (
     generate_semantic_palette,
     apply_titles,
     get_data_element_kwargs,
+    format_tick_labels,
 )
 
 
@@ -191,6 +192,10 @@ def boxplot(
 
     plot_type = "Violin" if violin else "Box"
     apply_titles(fig, title or f"{plot_type} Plot: {y}", subtitle, n=n)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax, rotation_x=45 if orientation == "vertical" else 0)
+
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 

@@ -21,6 +21,7 @@ from ..utils.style import (
     generate_semantic_palette,
     apply_titles,
     get_data_element_kwargs,
+    format_tick_labels,
 )
 
 
@@ -209,6 +210,10 @@ def bar(
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     apply_titles(fig, title or f"{y.title()} by {x.title()}", subtitle, n=n)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax, rotation_x=45 if orientation != "horizontal" else 0)
+
     # Adjust layout based on orientation (stacked has legend on right)
     if orientation == "stacked":
         fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))

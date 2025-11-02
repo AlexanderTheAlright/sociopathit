@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
-from ..utils.style import set_style, apply_titles, get_continuous_cmap
+from ..utils.style import set_style, apply_titles, get_continuous_cmap, format_tick_labels
 
 
 def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="viridis"):
@@ -72,6 +72,9 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
     # Bold axis labels with larger fonts for documents
     ax.set_xticklabels(ax.get_xticklabels(), fontsize=12, fontweight='bold', color='black')
     ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, fontweight='bold', color='black', rotation=0)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax, rotation_x=45)
 
     apply_titles(fig, title or "Correlation Heatmap", subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))

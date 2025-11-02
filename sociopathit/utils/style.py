@@ -40,38 +40,105 @@ def set_style(mode: str = "viridis"):
     plt.style.use("default")
     plt.rcParams.update({
         # Canvas and spines
-        "figure.facecolor": "white",
-        "axes.facecolor": "white",
+        "figure.facecolor": "#FFFFFF",
+        "axes.facecolor": "#FFFFFF",
         "axes.spines.top": False,
         "axes.spines.right": False,
-        "axes.edgecolor": "black",
-        # Grid
+        "axes.edgecolor": "#000000",
+        "axes.linewidth": 1.0,
+
+        # Default figure size (smaller) and DPI (higher)
+        "figure.figsize": (8.0, 5.0),
+        "figure.dpi": 300,
+
+        # Grid - improved defaults
         "axes.grid": True,
         "axes.grid.axis": "y",
-        "grid.color": "grey",
-        "grid.linestyle": ":",
-        "grid.linewidth": 0.7,
+        "grid.color": "#E0E0E0",
+        "grid.linestyle": "-",
+        "grid.linewidth": 0.75,
+        "grid.alpha": 0.5,
         "axes.axisbelow": True,
-        # Typography
+
+        # Typography - larger, clearer fonts
         "font.family": "sans-serif",
-        "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
-        "axes.titlesize": 20,
+        "font.sans-serif": ["DejaVu Sans", "Arial", "Helvetica"],
+        "axes.titlesize": 16,
         "axes.titleweight": "bold",
-        "axes.titlecolor": "#333333",
-        "axes.labelsize": 12,
+        "axes.titlecolor": "#000000",
+        "axes.labelsize": 11,
         "axes.labelweight": "bold",
-        "axes.labelcolor": "black",
-        "xtick.color": "black",
-        "ytick.color": "black",
+        "axes.labelcolor": "#000000",
+
+        # Tick parameters
+        "xtick.color": "#000000",
+        "ytick.color": "#000000",
         "xtick.labelsize": 10,
         "ytick.labelsize": 10,
-        "ytick.major.size": 0,
-        "legend.frameon": False,
-        "figure.dpi": 120,
+        "xtick.major.size": 5,
+        "ytick.major.size": 5,
+        "xtick.major.width": 1.0,
+        "ytick.major.width": 1.0,
+        "xtick.direction": "out",
+        "ytick.direction": "out",
+
+        # Legend - larger and clearer
+        "legend.frameon": True,
+        "legend.framealpha": 0.95,
+        "legend.fancybox": False,
+        "legend.edgecolor": "#CCCCCC",
+        "legend.facecolor": "white",
+        "legend.fontsize": 9,
+        "legend.title_fontsize": 10,
+        "legend.borderpad": 0.6,
+        "legend.labelspacing": 0.6,
+        "legend.handlelength": 2.0,
+        "legend.handleheight": 0.7,
+        "legend.handletextpad": 0.8,
+        "legend.borderaxespad": 0.5,
+        "legend.columnspacing": 2.0,
+
+        # Lines and markers
+        "lines.linewidth": 2.5,
+        "lines.markersize": 7,
+        "lines.markeredgewidth": 1.5,
+
+        # Export settings
+        "savefig.dpi": 300,
+        "savefig.bbox": "tight",
+        "savefig.pad_inches": 0.1,
+        "savefig.facecolor": "white",
     })
 
     global ACTIVE_STYLE
     ACTIVE_STYLE = mode
+
+
+def format_tick_labels(ax, rotation_x=45, bold=True):
+    """
+    Apply Sociopath-it tick label formatting: bold text and angled x-labels.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The axes to format
+    rotation_x : int or float
+        Rotation angle for x-tick labels (default 45°)
+    bold : bool
+        Whether to make labels bold (default True)
+    """
+    weight = 'bold' if bold else 'normal'
+
+    # Format x-tick labels
+    for label in ax.get_xticklabels():
+        label.set_fontweight(weight)
+        label.set_rotation(rotation_x)
+        if rotation_x != 0:
+            label.set_ha('right')
+
+    # Format y-tick labels
+    for label in ax.get_yticklabels():
+        label.set_fontweight(weight)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

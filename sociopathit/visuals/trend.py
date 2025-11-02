@@ -18,7 +18,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy.ndimage import gaussian_filter1d
 from matplotlib import cm
-from ..utils.style import set_style, generate_semantic_palette, apply_titles, get_color
+from ..utils.style import set_style, generate_semantic_palette, apply_titles, get_color, format_tick_labels
 
 
 def trend(
@@ -196,6 +196,10 @@ def trend(
 
     # --- Title layout ---
     apply_titles(fig, title, subtitle)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax, rotation_x=45)
+
     # Adjust layout based on whether legend is present
     if group:
         fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))

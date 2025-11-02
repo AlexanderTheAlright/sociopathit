@@ -76,7 +76,7 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
-    apply_titles(fig, title or "Correlation Heatmap", subtitle)
+    apply_titles(fig, title, subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 
@@ -298,7 +298,7 @@ def heatmap_distribution(
     if ylabel:
         ax.set_ylabel(ylabel, fontsize=12, weight='bold', color='black')
 
-    apply_titles(fig, title or "Distribution Heatmap", subtitle)
+    apply_titles(fig, title, subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
 

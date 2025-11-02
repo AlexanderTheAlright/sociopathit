@@ -40,7 +40,7 @@ def coef(
     upper_col="conf.high",
     p_col=None,
     group_col=None,
-    title="Coefficient Estimates",
+    title=None,
     subtitle=None,
     style_mode="reviewer3",
     annotate=True,
@@ -123,6 +123,14 @@ def coef(
     # Zero line
     ax.axvline(0, color="grey", linestyle="--", lw=1, alpha=0.7)
 
+    # ─── Widen x-axis window to avoid misleading narrow ranges ───────────────
+    x_min, x_max = ax.get_xlim()
+    x_range = x_max - x_min
+
+    # Add 20% padding on each side for better context
+    padding = x_range * 0.20
+    ax.set_xlim(x_min - padding, x_max + padding)
+
     ax.set_yticks(range(len(df)))
     # Bold y-axis labels when significant
     y_labels = []
@@ -168,7 +176,7 @@ def coef_interactive(
     upper_col="conf.high",
     p_col=None,
     group_col=None,
-    title="Coefficient Estimates",
+    title=None,
     subtitle=None,
     style_mode="reviewer3",
     sort="asc",

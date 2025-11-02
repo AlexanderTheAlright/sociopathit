@@ -38,7 +38,7 @@ def bar(
     palette=None,
     n=None,
     style_mode="viridis",
-    orientation="vertical",        # 'vertical', 'horizontal', 'stacked'
+    orientation="vertical",        # 'vertical', 'horizontal', 'stacked', 'grouped'
     highlight=None,                # highlight label
     highlight_color="#D62828",
     trace_line=False,
@@ -47,7 +47,67 @@ def bar(
     group_spacing=None,            # e.g. [(0,2), (3,5)] or int for split index
 ):
     """
-    Sociopath-it bar plot with optional sorting, grouping gaps, and curved trace line with arrowhead.
+    Sociopath-it bar plot with multiple orientations and optional features.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data for plotting
+    x : str
+        Column name for x-axis categories
+    y : str
+        Column name for y-axis values (not used for stacked/grouped)
+    title : str, optional
+        Plot title (None = no title)
+    subtitle : str, optional
+        Plot subtitle
+    palette : dict, optional
+        Custom color mapping (auto-generated if None)
+    n : int, optional
+        Sample size annotation
+    style_mode : str, default 'viridis'
+        Sociopath-it style mode
+    orientation : str, default 'vertical'
+        Bar orientation:
+        - 'vertical': Standard vertical bars
+        - 'horizontal': Horizontal bars
+        - 'stacked': Stacked bars (columns as stack segments)
+        - 'grouped': Grouped bars side-by-side (columns as groups)
+    highlight : str, optional
+        Category to highlight with special color
+    highlight_color : str, default '#D62828'
+        Color for highlighted category
+    trace_line : bool, default False
+        Draw curved line connecting bar tops (vertical only)
+    trace_arrow : bool, default True
+        Add arrowhead to trace line
+    sort : str, default 'none'
+        Sort bars: 'none', 'asc', or 'desc'
+    group_spacing : int, list, or tuple, optional
+        Add gaps between bar groups
+
+    Returns
+    -------
+    fig, ax : matplotlib Figure and Axes
+
+    Examples
+    --------
+    Simple vertical bars:
+    >>> bar(df, x='category', y='value')
+
+    Stacked bars (distribution over time):
+    >>> bar(df, x='wave', y='wave', orientation='stacked')
+
+    Grouped bars (side-by-side comparison):
+    >>> bar(df, x='wave', y='wave', orientation='grouped')
+
+    Notes
+    -----
+    For stacked and grouped orientations:
+    - Each column (except x and y) becomes a segment/group
+    - Uses discrete high-contrast color palette for up to 4 groups
+    - Legend appears on the right side
+    - X-axis labels auto-rotate at 45° if >6 labels or long text
     """
 
     # ─────────────────────────────────────────────
@@ -131,10 +191,14 @@ def bar(
             return True
 
         cols = [c for c in cols if has_meaningful_data(df[c])]
+
+        # Generate palette for stacked columns (not x-axis values!)
+        stack_palette = generate_semantic_palette({"positive": cols}, mode=style_mode)
+
         bottom = np.zeros(len(df))
         for c in cols:
             vals = df[c].values
-            ax.bar(df[x], vals, bottom=bottom, label=c, color=palette.get(c, cm.get_cmap("viridis")(0.6)), **kwargs)
+            ax.bar(df[x], vals, bottom=bottom, label=c, color=stack_palette.get(c, cm.get_cmap("viridis")(0.6)), **kwargs)
             bottom += vals
         legend = ax.legend(
             bbox_to_anchor=(1.02, 1.0),
@@ -150,6 +214,61 @@ def bar(
         legend.get_frame().set_linewidth(1.5)
         legend.get_frame().set_alpha(0.95)
         ax.set_ylabel("Total", fontsize=12, weight="bold", color="black")
+        ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
+
+    elif orientation == "grouped":
+        cols = [c for c in df.columns if c not in [x, y]]
+        # Filter out columns with no meaningful data
+        def has_meaningful_data(series):
+            vals = series.dropna()
+            if vals.empty:
+                return False
+            if (vals.abs() < 1e-10).all():
+                return False
+            if vals.sum() < 1e-10:
+                return False
+            return True
+
+        cols = [c for c in cols if has_meaningful_data(df[c])]
+        n_groups = len(cols)
+
+        # Generate palette for grouped columns
+        group_palette = generate_semantic_palette({"positive": cols}, mode=style_mode)
+
+        # Calculate bar positions
+        x_positions = np.arange(len(df))
+        bar_width = 0.8 / n_groups  # Total width of 0.8 divided by number of groups
+
+        # Plot grouped bars
+        for i, col in enumerate(cols):
+            # Calculate offset for this group
+            offset = (i - n_groups/2 + 0.5) * bar_width
+            vals = df[col].values
+            ax.bar(x_positions + offset, vals, bar_width,
+                   label=col,
+                   color=group_palette.get(col, cm.get_cmap("viridis")(0.6)),
+                   **kwargs)
+
+        # Set x-axis labels
+        ax.set_xticks(x_positions)
+        ax.set_xticklabels(df[x])
+
+        # Legend
+        legend = ax.legend(
+            bbox_to_anchor=(1.02, 1.0),
+            loc="upper left",
+            frameon=True,
+            facecolor="white",
+            edgecolor="grey",
+            fontsize=12,
+            title="Groups",
+            title_fontsize=13,
+        )
+        legend.get_title().set_fontweight("bold")
+        legend.get_frame().set_linewidth(1.5)
+        legend.get_frame().set_alpha(0.95)
+
+        ax.set_ylabel(y.title() if y else "Value", fontsize=12, weight="bold", color="black")
         ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
 
     else:  # vertical
@@ -204,18 +323,46 @@ def bar(
 
 
     # ─────────────────────────────────────────────
+    # Y-axis padding to avoid visual exaggeration
+    # ─────────────────────────────────────────────
+    if orientation != "horizontal":
+        y_min, y_max = ax.get_ylim()
+        y_range = y_max - y_min
+
+        # Add 20% padding on each side for better visual context
+        padding = y_range * 0.20
+        ax.set_ylim(y_min - padding, y_max + padding)
+
+        # For percentage data, ensure minimum window size
+        if y_max <= 100.0 and y_min >= 0:
+            if y_range < 20:  # Less than 20 percentage points
+                center = (y_min + y_max) / 2
+                ax.set_ylim(max(0, center - 15), min(100.0, center + 15))
+
+    # ─────────────────────────────────────────────
     # Styling and finishing touches
     # ─────────────────────────────────────────────
     ax.grid(axis="y" if orientation != "horizontal" else "x", linestyle=":", color="grey", linewidth=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    apply_titles(fig, title or f"{y.title()} by {x.title()}", subtitle, n=n)
+    apply_titles(fig, title, subtitle, n=n)
 
-    # Format tick labels: bold
-    format_tick_labels(ax)
+    # Automatic x-axis rotation for vertical/stacked bars with many or long labels
+    rotation_angle = 0
+    if orientation != "horizontal":
+        x_labels = [str(label.get_text()) for label in ax.get_xticklabels()]
+        n_labels = len(x_labels)
+        avg_label_len = np.mean([len(label) for label in x_labels]) if x_labels else 0
 
-    # Adjust layout based on orientation (stacked has legend on right)
-    if orientation == "stacked":
+        # Rotate if: more than 6 labels OR average label length > 8 characters
+        if n_labels > 6 or avg_label_len > 8:
+            rotation_angle = 45
+
+    # Format tick labels: bold and conditionally angled
+    format_tick_labels(ax, rotation_x=rotation_angle)
+
+    # Adjust layout based on orientation (stacked and grouped have legend on right)
+    if orientation in ["stacked", "grouped"]:
         fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
     else:
         fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))

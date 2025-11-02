@@ -18,7 +18,30 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy.ndimage import gaussian_filter1d
 from matplotlib import cm
+from matplotlib import patheffects
 from ..utils.style import set_style, generate_semantic_palette, apply_titles, get_color, format_tick_labels
+
+
+def _is_light_color(color):
+    """Check if a color is very light (close to white) and needs a dark border."""
+    if isinstance(color, tuple) and len(color) >= 3:
+        # Check if RGB values are all > 0.9 (very light)
+        return all(c > 0.9 for c in color[:3])
+    return False
+
+
+def _add_line_with_border(ax, xs, ys, color, lw=2, marker=None, label=None, zorder=3):
+    """Plot a line with a black border if the color is too light."""
+    line = ax.plot(xs, ys, marker=marker, label=label, color=color, lw=lw, zorder=zorder)[0]
+
+    # Add black border for light colors (white or near-white)
+    if _is_light_color(color):
+        line.set_path_effects([
+            patheffects.Stroke(linewidth=lw+2, foreground='black'),
+            patheffects.Normal()
+        ])
+
+    return line
 
 
 def trend(
@@ -27,7 +50,7 @@ def trend(
     y,
     group=None,
     kind="line",
-    title="Trend Over Time",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     figsize=(7, 5),
@@ -64,12 +87,9 @@ def trend(
             return True
 
         unique_groups = [g for g in df[group].unique() if has_meaningful_data(df[df[group] == g], y)]
-        thirds = max(1, len(unique_groups) // 3)
-        gdict = {
-            "positive": list(unique_groups[:thirds]),
-            "neutral": list(unique_groups[thirds:2*thirds]),
-            "negative": list(unique_groups[2*thirds:])
-        }
+        # Put all groups in "positive" category to ensure maximum color contrast
+        # This uses the discrete high-contrast palettes for 2-4 items
+        gdict = {"positive": list(unique_groups)}
         palette = generate_semantic_palette(gdict, mode=style_mode)
     else:
         cmap = cm.get_cmap("viridis")
@@ -101,7 +121,7 @@ def trend(
 
                 if fill_area:
                     ax.fill_between(xs, 0, ys, color=color, alpha=0.25)
-                ax.plot(xs, ys, marker=marker, label=str(g), color=color, lw=2, zorder=3)
+                _add_line_with_border(ax, xs, ys, color=color, lw=2, marker=marker, label=str(g), zorder=3)
 
                 if annotate:
                     last_val = ys[-1]
@@ -137,7 +157,7 @@ def trend(
             xs, ys = df_sorted[x].values, df_sorted[y].values
             if fill_area:
                 ax.fill_between(xs, 0, ys, color=palette["default"], alpha=0.25)
-            ax.plot(xs, ys, color=palette["default"], lw=2, marker=marker)
+            _add_line_with_border(ax, xs, ys, color=palette["default"], lw=2, marker=marker)
 
         # --- Optional shading between groups ---
         if shade_between and len(shade_between) == 2:
@@ -162,14 +182,21 @@ def trend(
     y_min, y_max = ax.get_ylim()
     y_range = y_max - y_min
 
-    # Add 15% padding on each side for better context
-    padding = y_range * 0.15
+    # Add 25% padding on each side for better context and to avoid visual exaggeration
+    padding = y_range * 0.25
     ax.set_ylim(y_min - padding, y_max + padding)
 
-    # For proportions/percentages (values between 0-1), ensure we show meaningful context
-    if y_max <= 1.0 and y_min >= 0:
-        # If the range is very narrow (less than 20% of full scale), widen to at least 30%
-        if y_range < 0.2:
+    # For proportions/percentages (values between 0-100), ensure we show meaningful context
+    if y_max <= 100.0 and y_min >= 0:
+        # If the range is very narrow, widen to show at least 20% of the full scale
+        if y_range < 20:  # Less than 20 percentage points
+            center = (y_min + y_max) / 2
+            new_min = max(0, center - 15)  # At least 30% window (15% on each side)
+            new_max = min(100.0, center + 15)
+            ax.set_ylim(new_min, new_max)
+    # For proportions (0-1 scale)
+    elif y_max <= 1.0 and y_min >= 0:
+        if y_range < 0.2:  # Less than 0.2 (20% of scale)
             center = (y_min + y_max) / 2
             ax.set_ylim(max(0, center - 0.15), min(1.0, center + 0.15))
 
@@ -214,7 +241,7 @@ def trend_interactive(
     y,
     group=None,
     kind="line",
-    title="Trend Over Time",
+    title=None,
     subtitle=None,
     style_mode="viridis",
     smooth=False,

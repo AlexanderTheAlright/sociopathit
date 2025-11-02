@@ -203,7 +203,7 @@ def waterfall(
                 y_center + y_range / 2 + buffer)
 
     # Titles
-    apply_titles(fig, title or f"Impact Waterfall: {y.replace('_', ' ').title()}",
+    apply_titles(fig, title,
                  subtitle)
 
     # Format tick labels: bold and angled

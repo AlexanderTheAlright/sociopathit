@@ -36,8 +36,8 @@ def scatterplot(
     x,
     y,
     group=None,
-    title="Scatter Plot",
-    subtitle="",
+    title=None,
+    subtitle=None,
     palette=None,
     ci=True,
     line=True,
@@ -102,12 +102,9 @@ def scatterplot(
 
         all_groups = df[group].dropna().unique().tolist()
         groups = [g for g in all_groups if has_meaningful_data(df[df[group] == g], x, y)]
-        thirds = max(1, len(groups) // 3)
-        g_dict = {
-            "positive": groups[:thirds],
-            "neutral": groups[thirds : 2 * thirds],
-            "negative": groups[2 * thirds :],
-        }
+        # Put all groups in "positive" category to ensure maximum color contrast
+        # This uses the discrete high-contrast palettes for 2-4 items
+        g_dict = {"positive": groups}
         palette = generate_semantic_palette(g_dict, mode=style_mode)
     elif palette is None:
         # Default single tone by style
@@ -172,6 +169,28 @@ def scatterplot(
                 ax.fill_between(xs, y_pred - ci_band, y_pred + ci_band,
                                 color=palette["default"], alpha=0.15)
 
+    # ─── Widen y-axis window to avoid misleading narrow ranges ───────────────
+    y_min, y_max = ax.get_ylim()
+    y_range = y_max - y_min
+
+    # Add 20% padding on each side for better context and to avoid visual exaggeration
+    padding = y_range * 0.20
+    ax.set_ylim(y_min - padding, y_max + padding)
+
+    # For proportions/percentages (values between 0-100), ensure we show meaningful context
+    if y_max <= 100.0 and y_min >= 0:
+        # If the range is very narrow, widen to show at least 20% of the full scale
+        if y_range < 20:  # Less than 20 percentage points
+            center = (y_min + y_max) / 2
+            new_min = max(0, center - 15)  # At least 30% window (15% on each side)
+            new_max = min(100.0, center + 15)
+            ax.set_ylim(new_min, new_max)
+    # For proportions (0-1 scale)
+    elif y_max <= 1.0 and y_min >= 0:
+        if y_range < 0.2:  # Less than 0.2 (20% of scale)
+            center = (y_min + y_max) / 2
+            ax.set_ylim(max(0, center - 0.15), min(1.0, center + 0.15))
+
     # ─── Axis aesthetics ──────────────────────────────────────────────────────
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
     ax.set_ylabel(y.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
@@ -217,7 +236,7 @@ def scatterplot_interactive(
     x,
     y,
     group=None,
-    title="Scatter Plot",
+    title=None,
     subtitle="",
     line=True,
     style_mode="viridis",

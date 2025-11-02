@@ -42,6 +42,7 @@ def boxplot(
     showmeans=True,
     show_points=False,
     point_alpha=0.3,
+    figsize=(10, 6),
 ):
     """
     Sociopath-it box plot or violin plot.
@@ -74,13 +75,15 @@ def boxplot(
         Overlay individual data points
     point_alpha : float
         Transparency of points (if show_points=True)
+    figsize : tuple
+        Figure size (width, height) in inches
 
     Returns
     -------
     fig, ax : matplotlib figure and axes
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
+    fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -175,22 +178,37 @@ def boxplot(
         y_min, y_max = ax.get_ylim()
         y_range = y_max - y_min
 
+        # Check if ACTUAL DATA appears to be percentage (0-100) or proportion (0-1)
+        # Look at the data values, not the autoscaled axis limits
+        data_max = df[y].max()
+        data_min = df[y].min()
+        is_percentage = (data_max <= 100.0 and data_min >= 0)
+        is_proportion = (data_max <= 1.0 and data_min >= 0)
+
         # Add 20% padding on each side for better context
         padding = y_range * 0.20
-        ax.set_ylim(y_min - padding, y_max + padding)
+        new_min = y_min - padding
+        new_max = y_max + padding
 
-        # For proportions/percentages (values between 0-100), ensure meaningful context
-        if y_max <= 100.0 and y_min >= 0:
+        # For percentage/proportion data, clamp to valid ranges
+        if is_percentage:
+            # Don't go below 0 or above 100 for percentage data
+            new_min = max(0, new_min)
+            new_max = min(100.0, new_max)
             if y_range < 20:  # Less than 20 percentage points
                 center = (y_min + y_max) / 2
                 new_min = max(0, center - 15)
                 new_max = min(100.0, center + 15)
-                ax.set_ylim(new_min, new_max)
-        # For proportions (0-1 scale)
-        elif y_max <= 1.0 and y_min >= 0:
+        elif is_proportion:
+            # Don't go below 0 or above 1 for proportion data
+            new_min = max(0, new_min)
+            new_max = min(1.0, new_max)
             if y_range < 0.2:
                 center = (y_min + y_max) / 2
-                ax.set_ylim(max(0, center - 0.15), min(1.0, center + 0.15))
+                new_min = max(0, center - 0.15)
+                new_max = min(1.0, center + 0.15)
+
+        ax.set_ylim(new_min, new_max)
 
     # Labels and styling
     if orientation == "vertical":

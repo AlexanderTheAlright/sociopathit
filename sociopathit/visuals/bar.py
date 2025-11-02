@@ -45,6 +45,7 @@ def bar(
     trace_arrow=True,
     sort="none",                   # 'none', 'asc', or 'desc'
     group_spacing=None,            # e.g. [(0,2), (3,5)] or int for split index
+    figsize=(10, 6),
 ):
     """
     Sociopath-it bar plot with multiple orientations and optional features.
@@ -147,7 +148,7 @@ def bar(
     # Styling setup
     # ─────────────────────────────────────────────
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
+    fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -172,7 +173,7 @@ def bar(
         ax.set_ylabel("")
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
-                ax.text(val + (df[y].max() * 0.015), i, f"{val:,}", va="center", fontsize=9, color="black", weight="bold",
+                ax.text(val + (df[y].max() * 0.015), i, f"{val:,.2f}", va="center", fontsize=9, color="black", weight="bold",
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
     elif orientation == "stacked":
@@ -278,7 +279,7 @@ def bar(
 
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
-                ax.text(i, val + (df[y].max() * 0.03), f"{val:,}", ha="center", fontsize=9, color="black", weight="bold",
+                ax.text(i, val + (df[y].max() * 0.03), f"{val:,.2f}", ha="center", fontsize=9, color="black", weight="bold",
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
         # ─────────────────────────────────────────────
@@ -326,18 +327,53 @@ def bar(
     # Y-axis padding to avoid visual exaggeration
     # ─────────────────────────────────────────────
     if orientation != "horizontal":
+        # Get current autoscaled limits
         y_min, y_max = ax.get_ylim()
         y_range = y_max - y_min
 
+        # Check if ACTUAL DATA appears to be percentage (0-100) or proportion (0-1)
+        # Look at the data values, not the autoscaled axis limits
+        if orientation == "stacked":
+            # For stacked bars, check the max of the stacked totals
+            data_max = df[[c for c in df.columns if c not in [x, y]]].sum(axis=1).max()
+            data_min = 0  # Stacked bars start at 0
+        elif orientation == "grouped":
+            # For grouped bars, check max across all group columns
+            data_max = df[[c for c in df.columns if c not in [x, y]]].max().max()
+            data_min = df[[c for c in df.columns if c not in [x, y]]].min().min()
+        else:
+            # For vertical bars, check y column
+            data_max = df[y].max()
+            data_min = df[y].min()
+
+        is_percentage = (data_max <= 100.0 and data_min >= 0)
+        is_proportion = (data_max <= 1.0 and data_min >= 0)
+
         # Add 20% padding on each side for better visual context
         padding = y_range * 0.20
-        ax.set_ylim(y_min - padding, y_max + padding)
+        new_min = y_min - padding
+        new_max = y_max + padding
 
-        # For percentage data, ensure minimum window size
-        if y_max <= 100.0 and y_min >= 0:
+        # For percentage/proportion data, clamp to valid ranges
+        if is_percentage:
+            # Don't go below 0 or above 100 for percentage data
+            new_min = max(0, new_min)
+            new_max = min(100.0, new_max)
+            # Ensure minimum window size for narrow ranges
             if y_range < 20:  # Less than 20 percentage points
                 center = (y_min + y_max) / 2
-                ax.set_ylim(max(0, center - 15), min(100.0, center + 15))
+                new_min = max(0, center - 15)
+                new_max = min(100.0, center + 15)
+        elif is_proportion:
+            # Don't go below 0 or above 1 for proportion data
+            new_min = max(0, new_min)
+            new_max = min(1.0, new_max)
+            if y_range < 0.2:
+                center = (y_min + y_max) / 2
+                new_min = max(0, center - 0.15)
+                new_max = min(1.0, center + 0.15)
+
+        ax.set_ylim(new_min, new_max)
 
     # ─────────────────────────────────────────────
     # Styling and finishing touches

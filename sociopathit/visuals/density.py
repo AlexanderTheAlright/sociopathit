@@ -39,6 +39,7 @@ def kde(
     style_mode="viridis",
     fill=True,
     bw_adjust=1.0,
+    figsize=(10, 6),
 ):
     """
     Kernel density estimation plot.
@@ -65,13 +66,15 @@ def kde(
         Fill under curves
     bw_adjust : float
         Bandwidth adjustment factor
+    figsize : tuple
+        Figure size (width, height) in inches
 
     Returns
     -------
     fig, ax : matplotlib figure and axes
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
+    fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -157,6 +160,7 @@ def ridgeline(
     n=None,
     style_mode="viridis",
     overlap=0.5,
+    figsize=None,
 ):
     """
     Ridgeline plot (joyplot) for comparing distributions.
@@ -191,7 +195,10 @@ def ridgeline(
     groups = sorted(df[group].unique(), reverse=True)
     n_groups = len(groups)
 
-    fig, ax = plt.subplots(figsize=(10, 2 + n_groups * 0.8), dpi=130)
+    # Use provided figsize or calculate dynamically based on number of groups
+    if figsize is None:
+        figsize = (10, 2 + n_groups * 0.8)
+    fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -265,6 +272,7 @@ def raincloud(
     style_mode="viridis",
     point_size=20,
     point_alpha=0.5,
+    figsize=(10, 6),
 ):
     """
     Raincloud plot: combination of violin, box, and scatter plots.
@@ -297,7 +305,7 @@ def raincloud(
     fig, ax : matplotlib figure and axes
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
+    fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
 

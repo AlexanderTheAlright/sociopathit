@@ -369,12 +369,15 @@ def bar(
                 new_min = max(0, center - 0.15)
                 new_max = min(1.0, center + 0.15)
         else:
-            # For non-percentage data: use autoscaled limits for padding
-            y_min, y_max = ax.get_ylim()
-            y_range = y_max - y_min
-            padding = y_range * 0.20
-            new_min = y_min - padding
-            new_max = y_max + padding
+            # For non-percentage data: calculate padding from data range
+            padding = data_range * 0.20
+            # For grouped/stacked bars, start at 0 if all data is positive
+            # (bars should naturally start at baseline unless there's negative data)
+            if data_min >= 0:
+                new_min = 0
+            else:
+                new_min = data_min - padding
+            new_max = data_max + padding
 
         ax.set_ylim(new_min, new_max)
 

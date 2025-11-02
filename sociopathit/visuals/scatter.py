@@ -23,6 +23,7 @@ from ..utils.style import (
     set_style,
     apply_titles,
     generate_semantic_palette,
+    format_tick_labels,
 )
 
 
@@ -199,6 +200,10 @@ def scatterplot(
         legend.get_frame().set_linewidth(1.5)
 
     has_subtitle = bool(subtitle and str(subtitle).strip())
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax, rotation_x=45)
+
     # Adjust layout based on whether legend is present
     if group:
         fig.tight_layout(rect=(0, 0, 0.85, 0.9 if has_subtitle else 0.94))

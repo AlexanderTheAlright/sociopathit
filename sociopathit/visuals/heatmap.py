@@ -74,7 +74,7 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
     ax.set_yticklabels(ax.get_yticklabels(), fontsize=12, fontweight='bold', color='black', rotation=0)
 
     # Format tick labels: bold and angled
-    format_tick_labels(ax, rotation_x=45)
+    format_tick_labels(ax)
 
     apply_titles(fig, title or "Correlation Heatmap", subtitle)
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))

@@ -194,7 +194,7 @@ def boxplot(
     apply_titles(fig, title or f"{plot_type} Plot: {y}", subtitle, n=n)
 
     # Format tick labels: bold and angled
-    format_tick_labels(ax, rotation_x=45 if orientation == "vertical" else 0)
+    format_tick_labels(ax if orientation == "vertical" else 0)
 
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax

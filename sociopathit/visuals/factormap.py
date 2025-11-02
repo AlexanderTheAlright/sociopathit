@@ -16,7 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from adjustText import adjust_text
-from ..utils.style import set_style, apply_titles, get_color
+from ..utils.style import set_style, apply_titles, get_color, format_tick_labels
 
 def factormap(
     active_coords,
@@ -184,6 +184,10 @@ def factormap(
 
     # Title and layout
     apply_titles(fig, title, subtitle, n=len(active))
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax)
+
     plt.subplots_adjust(right=0.82, left=0.12, bottom=0.12, top=0.92)
     fig.tight_layout(rect=(0.08, 0.08, 0.85, 0.9 if subtitle else 0.94))
     return fig, ax
@@ -411,6 +415,9 @@ def factormap_3d(
     apply_titles(fig, title, subtitle)
 
     # Adjust layout - increase plot space, reduce margins
+    # Format tick labels: bold (no rotation for 3D plots - labels are on axes)
+    format_tick_labels(ax, rotation_x=0)
+
     plt.subplots_adjust(left=0.05, right=0.85, top=0.92, bottom=0.05)
     plt.tight_layout(rect=(0, 0, 0.88, 0.9 if subtitle else 0.94))
     return fig, ax

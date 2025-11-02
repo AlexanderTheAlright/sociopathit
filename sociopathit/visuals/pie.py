@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from ..utils.style import set_style, apply_titles
+from ..utils.style import set_style, apply_titles, format_tick_labels
 
 
 def pie(

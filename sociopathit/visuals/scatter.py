@@ -202,7 +202,7 @@ def scatterplot(
     has_subtitle = bool(subtitle and str(subtitle).strip())
 
     # Format tick labels: bold and angled
-    format_tick_labels(ax, rotation_x=45)
+    format_tick_labels(ax)
 
     # Adjust layout based on whether legend is present
     if group:

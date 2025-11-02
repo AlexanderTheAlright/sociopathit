@@ -21,7 +21,7 @@ from scipy import stats
 warnings.filterwarnings('ignore')
 
 try:
-    from ..utils.style import apply_titles, COLORS_DICT, get_color
+    from ..utils.style import apply_titles, COLORS_DICT, get_color, format_tick_labels
 except ImportError:
     def apply_titles(*args, **kwargs):
         pass

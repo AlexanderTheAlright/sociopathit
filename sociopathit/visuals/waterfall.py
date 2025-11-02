@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from matplotlib import cm
 from matplotlib.ticker import FormatStrFormatter
-from ..utils.style import set_style, apply_titles
+from ..utils.style import set_style, apply_titles, format_tick_labels
 
 
 def waterfall(
@@ -205,6 +205,9 @@ def waterfall(
     # Titles
     apply_titles(fig, title or f"Impact Waterfall: {y.replace('_', ' ').title()}",
                  subtitle)
+
+    # Format tick labels: bold and angled
+    format_tick_labels(ax)
 
     fig.tight_layout(rect=(0, 0, 1, 0.90 if subtitle else 0.94))
 

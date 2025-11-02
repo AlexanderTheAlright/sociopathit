@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for file in cooccur.py dag.py feature.py flow.py geographic.py hierarchical.py horizon.py ice.py margins.py oddsratio.py pair.py residuals.py wordcloud.py)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

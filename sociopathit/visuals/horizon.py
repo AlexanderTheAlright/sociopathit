@@ -28,6 +28,7 @@ try:
         generate_semantic_palette,
         apply_titles,
         COLORS_DICT,
+        format_tick_labels,
     )
 except ImportError:
     def set_style(*args, **kwargs):
@@ -150,6 +151,9 @@ def horizon(
     ax.grid(True, alpha=0.3, linestyle='--', axis='x')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+
+    # Format tick labels
+    format_tick_labels(ax)
 
     # Title
     if title or subtitle:
@@ -277,6 +281,10 @@ def horizon_panel(
 
     # X-label on bottom plot only
     axes[-1].set_xlabel(x.replace("_", " ").title(), fontsize=11, weight='bold', color='black')
+
+    # Format tick labels on all panels
+    for ax in axes:
+        format_tick_labels(ax)
 
     # Title
     if title or subtitle:

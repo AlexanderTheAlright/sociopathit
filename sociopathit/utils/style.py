@@ -149,6 +149,9 @@ def generate_semantic_palette(groups: dict, mode: str = None):
     """
     Generate a semantic color palette depending on the active or specified style.
 
+    For small numbers of items (2-4), uses explicitly defined high-contrast colors
+    to ensure maximum visual distinction. For 5+ items, uses colormap sampling.
+
     Parameters
     ----------
     groups : dict
@@ -163,76 +166,112 @@ def generate_semantic_palette(groups: dict, mode: str = None):
     style = (mode or globals().get("ACTIVE_STYLE", "viridis")).lower()
     palette = {}
 
+    # Define explicit high-contrast color sets for small numbers of items
+    # Format: {style: {n_items: [color1, color2, ...]}}
+    DISCRETE_PALETTES = {
+        "viridis": {
+            1: [(0.127568, 0.566949, 0.550556, 1.0)],  # Teal middle
+            2: [(0.267004, 0.004874, 0.329415, 1.0),   # Dark purple
+                (0.993248, 0.906157, 0.143936, 1.0)],  # Bright yellow
+            3: [(0.267004, 0.004874, 0.329415, 1.0),   # Dark purple
+                (0.127568, 0.566949, 0.550556, 1.0),   # Teal
+                (0.993248, 0.906157, 0.143936, 1.0)],  # Bright yellow
+            4: [(0.267004, 0.004874, 0.329415, 1.0),   # Dark purple
+                (0.153364, 0.497000, 0.557724, 1.0),   # Blue-teal
+                (0.468667, 0.856531, 0.434154, 1.0),   # Yellow-green
+                (0.993248, 0.906157, 0.143936, 1.0)],  # Bright yellow
+        },
+        "sentiment": {
+            1: [(0.5, 0.5, 0.5, 1.0)],                 # Gray
+            2: [(0.133, 0.545, 0.133, 1.0),            # Forest green
+                (0.839, 0.153, 0.157, 1.0)],           # Crimson red
+            3: [(0.133, 0.545, 0.133, 1.0),            # Forest green
+                (0.5, 0.5, 0.5, 1.0),                  # Gray
+                (0.839, 0.153, 0.157, 1.0)],           # Crimson red
+            4: [(0.000, 0.392, 0.000, 1.0),            # Dark green
+                (0.133, 0.545, 0.133, 1.0),            # Forest green
+                (0.839, 0.153, 0.157, 1.0),            # Crimson red
+                (0.545, 0.000, 0.000, 1.0)],           # Dark red
+        },
+        "fiery": {
+            1: [(0.8, 0.4, 0.0, 1.0)],                 # Orange middle
+            2: [(0.050383, 0.029803, 0.527975, 1.0),  # Dark purple/blue
+                (0.940015, 0.975158, 0.131326, 1.0)], # Bright yellow
+            3: [(0.050383, 0.029803, 0.527975, 1.0),  # Dark purple/blue
+                (0.796338, 0.278826, 0.473089, 1.0),  # Pink/magenta
+                (0.940015, 0.975158, 0.131326, 1.0)], # Bright yellow
+            4: [(0.050383, 0.029803, 0.527975, 1.0),  # Dark purple/blue
+                (0.618896, 0.124865, 0.608374, 1.0),  # Purple
+                (0.905384, 0.500563, 0.173636, 1.0),  # Orange
+                (0.940015, 0.975158, 0.131326, 1.0)], # Bright yellow
+        },
+        "plainjane": {
+            1: [(0.5, 0.5, 0.5, 1.0)],                 # Gray
+            2: [(0.122, 0.467, 0.706, 1.0),            # Blue
+                (1.0, 1.0, 1.0, 1.0)],                 # White
+            3: [(0.122, 0.467, 0.706, 1.0),            # Blue
+                (0.5, 0.5, 0.5, 1.0),                  # Gray
+                (1.0, 1.0, 1.0, 1.0)],                 # White
+            4: [(0.031, 0.188, 0.420, 1.0),            # Dark blue
+                (0.122, 0.467, 0.706, 1.0),            # Light blue
+                (0.7, 0.7, 0.7, 1.0),                  # Light gray
+                (1.0, 1.0, 1.0, 1.0)],                 # White
+        },
+        "reviewer3": {
+            1: [(0.0, 0.0, 0.0, 1.0)],                 # Black
+            2: [(0.0, 0.0, 0.0, 1.0),                  # Pure black
+                (1.0, 1.0, 1.0, 1.0)],                 # Pure white
+            3: [(0.0, 0.0, 0.0, 1.0),                  # Black
+                (0.5, 0.5, 0.5, 1.0),                  # Medium gray
+                (1.0, 1.0, 1.0, 1.0)],                 # White
+            4: [(0.0, 0.0, 0.0, 1.0),                  # Black
+                (0.33, 0.33, 0.33, 1.0),               # Dark gray
+                (0.67, 0.67, 0.67, 1.0),               # Light gray
+                (1.0, 1.0, 1.0, 1.0)],                 # White
+        },
+    }
+
+    # Setup colormaps for 5+ items (legacy behavior)
     if style == "fiery":
         cmaps = {"positive": cm.plasma, "neutral": cm.magma, "negative": cm.inferno}
-        ranges = {"positive": (0.3, 1.0), "neutral": (0.2, 0.7), "negative": (0.1, 0.8)}
-
+        ranges = {"positive": (0.0, 1.0), "neutral": (0.0, 1.0), "negative": (0.0, 1.0)}
     elif style == "sentiment":
         cmaps = {"positive": cm.Greens, "neutral": cm.Greys, "negative": cm.Reds_r}
-        ranges = {"positive": (0.4, 1.0), "neutral": (0.3, 0.8), "negative": (0.2, 0.9)}
-
+        ranges = {"positive": (0.3, 1.0), "neutral": (0.2, 0.8), "negative": (0.3, 1.0)}
     elif style == "plainjane":
         cmaps = {"positive": cm.Blues, "neutral": cm.Greys, "negative": cm.Reds}
-        ranges = {"positive": (0.3, 1.0), "neutral": (0.3, 0.7), "negative": (0.3, 1.0)}
-
+        ranges = {"positive": (0.2, 1.0), "neutral": (0.2, 0.8), "negative": (0.2, 1.0)}
     elif style == "reviewer3":
-        # High contrast black and white first, then grayscale — perfect for publication
         cmaps = {"positive": cm.Greys, "neutral": cm.Greys, "negative": cm.Greys}
         ranges = {"positive": (0.0, 1.0), "neutral": (0.0, 1.0), "negative": (0.0, 1.0)}
-
     else:  # viridis
         cmaps = {"positive": cm.viridis, "neutral": cm.viridis, "negative": cm.viridis}
-        ranges = {"positive": (0.0, 1.0), "neutral": (0.1, 0.9), "negative": (0.0, 0.8)}
+        ranges = {"positive": (0.0, 1.0), "neutral": (0.0, 1.0), "negative": (0.0, 1.0)}
 
     # Build palette
     for group, items in groups.items():
         if not items:
             continue
-        g = group.lower()
-        key = "positive" if g.startswith("pos") else \
-              "neutral" if g.startswith("neu") else \
-              "negative" if g.startswith("neg") else "positive"
-        cmap, (low, high) = cmaps[key], ranges[key]
 
-        # High contrast handling for all styles
-        if len(items) == 1:
-            # Single item: use middle of range
-            palette[items[0]] = cmap((low + high) / 2)
-        elif len(items) == 2:
-            # Two items: ALWAYS use absolute extremes for maximum contrast
-            if style == "reviewer3":
-                palette[items[0]] = (0, 0, 0, 1)  # Pure black
-                palette[items[1]] = (0.95, 0.95, 0.95, 1)  # Near white (for visibility with borders)
-            else:
-                palette[items[0]] = cmap(0.0)  # Absolute start of colormap
-                palette[items[1]] = cmap(1.0)  # Absolute end of colormap
-        elif len(items) == 3:
-            # Three items: use extremes and middle
-            if style == "reviewer3":
-                palette[items[0]] = (0, 0, 0, 1)  # Pure black
-                palette[items[1]] = (0.5, 0.5, 0.5, 1)  # Medium gray
-                palette[items[2]] = (0.95, 0.95, 0.95, 1)  # Near white
-            else:
-                palette[items[0]] = cmap(0.0)  # Absolute start
-                palette[items[1]] = cmap(0.5)  # Middle
-                palette[items[2]] = cmap(1.0)  # Absolute end
-        elif len(items) == 4:
-            # Four items: evenly distributed across full range
-            if style == "reviewer3":
-                palette[items[0]] = (0, 0, 0, 1)
-                palette[items[1]] = (0.33, 0.33, 0.33, 1)
-                palette[items[2]] = (0.66, 0.66, 0.66, 1)
-                palette[items[3]] = (0.95, 0.95, 0.95, 1)
-            else:
-                palette[items[0]] = cmap(0.0)
-                palette[items[1]] = cmap(0.33)
-                palette[items[2]] = cmap(0.67)
-                palette[items[3]] = cmap(1.0)
+        n_items = len(items)
+
+        # For 1-4 items, use explicit discrete palette for maximum contrast
+        if n_items <= 4:
+            colors = DISCRETE_PALETTES.get(style, DISCRETE_PALETTES["viridis"])[n_items]
+            for item, color in zip(items, colors):
+                palette[item] = color
         else:
-            # Five or more: use the specified range with linspace
-            vals = np.linspace(low, high, len(items))
+            # For 5+ items, use colormap sampling
+            g = group.lower()
+            key = "positive" if g.startswith("pos") else \
+                  "neutral" if g.startswith("neu") else \
+                  "negative" if g.startswith("neg") else "positive"
+            cmap, (low, high) = cmaps[key], ranges[key]
+
+            vals = np.linspace(low, high, n_items)
             for item, v in zip(items, vals):
                 palette[item] = cmap(v)
+
     return palette
 
 

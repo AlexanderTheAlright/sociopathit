@@ -327,10 +327,6 @@ def bar(
     # Y-axis padding to avoid visual exaggeration
     # ─────────────────────────────────────────────
     if orientation != "horizontal":
-        # Get current autoscaled limits
-        y_min, y_max = ax.get_ylim()
-        y_range = y_max - y_min
-
         # Check if ACTUAL DATA appears to be percentage (0-100) or proportion (0-1)
         # Look at the data values, not the autoscaled axis limits
         if orientation == "stacked":
@@ -346,32 +342,39 @@ def bar(
             data_max = df[y].max()
             data_min = df[y].min()
 
-        is_percentage = (data_max <= 100.0 and data_min >= 0)
-        is_proportion = (data_max <= 1.0 and data_min >= 0)
+        # Use small tolerance for floating point comparison
+        is_percentage = (data_max <= 100.0 + 1e-9 and data_min >= -1e-9)
+        is_proportion = (data_max <= 1.0 + 1e-9 and data_min >= -1e-9)
 
-        # Add 20% padding on each side for better visual context
-        padding = y_range * 0.20
-        new_min = y_min - padding
-        new_max = y_max + padding
+        # Calculate padding based on ACTUAL DATA range, not autoscaled limits
+        data_range = data_max - data_min
 
-        # For percentage/proportion data, clamp to valid ranges
         if is_percentage:
-            # Don't go below 0 or above 100 for percentage data
-            new_min = max(0, new_min)
-            new_max = min(100.0, new_max)
+            # For percentage data: use data range for padding, then clamp to [0, 100]
+            padding = data_range * 0.20
+            new_min = max(0, data_min - padding)
+            new_max = min(100.0, data_max + padding)
             # Ensure minimum window size for narrow ranges
-            if y_range < 20:  # Less than 20 percentage points
-                center = (y_min + y_max) / 2
+            if data_range < 20:  # Less than 20 percentage points
+                center = (data_min + data_max) / 2
                 new_min = max(0, center - 15)
                 new_max = min(100.0, center + 15)
         elif is_proportion:
-            # Don't go below 0 or above 1 for proportion data
-            new_min = max(0, new_min)
-            new_max = min(1.0, new_max)
-            if y_range < 0.2:
-                center = (y_min + y_max) / 2
+            # For proportion data: use data range for padding, then clamp to [0, 1]
+            padding = data_range * 0.20
+            new_min = max(0, data_min - padding)
+            new_max = min(1.0, data_max + padding)
+            if data_range < 0.2:
+                center = (data_min + data_max) / 2
                 new_min = max(0, center - 0.15)
                 new_max = min(1.0, center + 0.15)
+        else:
+            # For non-percentage data: use autoscaled limits for padding
+            y_min, y_max = ax.get_ylim()
+            y_range = y_max - y_min
+            padding = y_range * 0.20
+            new_min = y_min - padding
+            new_max = y_max + padding
 
         ax.set_ylim(new_min, new_max)
 

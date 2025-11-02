@@ -40,6 +40,7 @@ def histogram(
     style_mode="viridis",
     trace_outline=False,
     thresholds=None,
+    figsize=(10, 6),
 ):
     """
     Sociopath-it styled histogram with dynamic theming.
@@ -69,9 +70,11 @@ def histogram(
         Add smooth curve tracing the distribution top.
     thresholds : list, optional
         List of x-values to mark with vertical red dashed lines.
+    figsize : tuple
+        Figure size (width, height) in inches
     """
     set_style(style_mode)
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=130)
+    fig, ax = plt.subplots(figsize=figsize, dpi=130)
 
     vals = df[x].dropna()
     n = n or len(vals)
@@ -136,7 +139,7 @@ def histogram(
     y_min, y_max = ax.get_ylim()
     y_range = y_max - y_min
 
-    # Add 20% padding on top for better context
+    # Add 20% padding on top for better context (keep bottom at natural value)
     padding = y_range * 0.20
     ax.set_ylim(y_min, y_max + padding)
 

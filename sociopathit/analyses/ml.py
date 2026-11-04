@@ -546,6 +546,10 @@ def shap_analysis(
     if not SHAP_AVAILABLE:
         raise ImportError("shap is required. Install it with: pip install sociopathit[ml]")
 
+    # Unwrap an MLModel (as returned by train_model) to its sklearn pipeline
+    if hasattr(model, 'pipeline'):
+        model = model.pipeline
+
     # Extract model from pipeline if needed
     if hasattr(model, 'named_steps'):
         # Need to transform data first
@@ -563,7 +567,7 @@ def shap_analysis(
         X_transformed = X.values
 
     # Select appropriate explainer
-    if hasattr(actual_model, 'tree_'):
+    if hasattr(actual_model, 'tree_') or hasattr(actual_model, 'estimators_'):
         # Tree-based model
         explainer = shap.TreeExplainer(actual_model)
         shap_values = explainer.shap_values(X_transformed)

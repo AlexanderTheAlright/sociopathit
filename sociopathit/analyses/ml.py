@@ -1,5 +1,5 @@
 """
-ml.py  Sociopath-it Machine Learning Module
+ml.py: Sociopath-it Machine Learning Module
 -------------------------------------------
 Machine learning pipelines for prediction and feature analysis.
 
@@ -49,12 +49,11 @@ except ImportError:
     SHAP_AVAILABLE = False
     # Don't warn - SHAP is optional
 
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # PIPELINE BUILDING
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def build_pipeline(
     numeric_features: Optional[List[str]] = None,
@@ -152,9 +151,9 @@ def build_pipeline(
     return pipeline
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # MODEL TRAINING
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 class MLModel:
     """
@@ -448,9 +447,9 @@ class MLModel:
         return output
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # FEATURE IMPORTANCE
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def feature_importance(
     model: Any,
@@ -478,6 +477,9 @@ def feature_importance(
     --------
     >>> importance = feature_importance(fitted_model, feature_names=['age', 'income'])
     """
+    # Accept a fitted MLModel (from train_model) as well as a Pipeline
+    if getattr(model, 'pipeline', None) is not None:
+        model = model.pipeline
     # Extract model from pipeline if needed
     if hasattr(model, 'named_steps'):
         actual_model = model.named_steps['model']
@@ -506,9 +508,9 @@ def feature_importance(
     return df_importance
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # SHAP ANALYSIS (OPTIONAL)
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def shap_analysis(
     model: Any,
@@ -542,7 +544,11 @@ def shap_analysis(
     Requires shap package: pip install shap
     """
     if not SHAP_AVAILABLE:
-        raise ImportError("shap required. Install with: pip install shap")
+        raise ImportError("shap is required. Install it with: pip install sociopathit[ml]")
+
+    # Unwrap an MLModel (as returned by train_model) to its sklearn pipeline
+    if hasattr(model, 'pipeline'):
+        model = model.pipeline
 
     # Extract model from pipeline if needed
     if hasattr(model, 'named_steps'):
@@ -561,7 +567,7 @@ def shap_analysis(
         X_transformed = X.values
 
     # Select appropriate explainer
-    if hasattr(actual_model, 'tree_'):
+    if hasattr(actual_model, 'tree_') or hasattr(actual_model, 'estimators_'):
         # Tree-based model
         explainer = shap.TreeExplainer(actual_model)
         shap_values = explainer.shap_values(X_transformed)
@@ -574,9 +580,9 @@ def shap_analysis(
     return shap_values
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CONVENIENCE FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def train_model(
     df: pd.DataFrame,

@@ -1,5 +1,5 @@
 """
-ice.py - Sociopath-it ICE Plots Module
+ice.py: Sociopath-it ICE Plots Module
 ---------------------------------------
 Individual Conditional Expectation plots for model interpretability.
 
@@ -17,9 +17,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from typing import Optional, Union, List
-import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
     from ..utils.style import (
@@ -188,7 +186,6 @@ def ice(
     ax.set_ylabel(ylabel, fontsize=12, weight='bold', color='black')
 
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
     # Spines
@@ -203,7 +200,8 @@ def ice(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -342,7 +340,6 @@ def ice_comparison(
         ax.set_xlabel(feat_name.replace("_", " ").title(),
                      fontsize=11, weight='bold', color='black')
         ax.set_ylabel('Prediction', fontsize=11, weight='bold', color='black')
-        ax.grid(True, alpha=0.3, linestyle='--')
         ax.set_axisbelow(True)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -364,7 +361,8 @@ def ice_comparison(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 

@@ -477,7 +477,7 @@ def build_longit_from_dir(data_dir: Union[str, 'Path'],
     # Sort by ID and wave
     long_df = sort_by_wave(long_df, id_col=id_col, wave_col='wave', verify=False)
 
-    print(f"✓ Created long-form dataset: {len(long_df)} observations")
+    print(f"Created long-form dataset: {len(long_df)} observations")
     print(f"  - {long_df[id_col].nunique()} unique individuals")
     print(f"  - {long_df['wave'].nunique()} waves")
     print(f"  - {len(target_vars)} variables")

@@ -1,5 +1,5 @@
 """
-dag.py - Sociopath-it Causal DAG Visualizations
+dag.py: Sociopath-it Causal DAG Visualizations
 ------------------------------------------------
 Directed Acyclic Graphs for causal inference.
 
@@ -17,15 +17,12 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from typing import Optional, List, Dict, Tuple
-import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
     import networkx as nx
 except ImportError:
     nx = None
-    warnings.warn("networkx not installed. Install with: pip install networkx")
 
 try:
     from ..utils.style import (
@@ -102,7 +99,7 @@ def dag(
     ...     title='Causal DAG')
     """
     if nx is None:
-        raise ImportError("networkx is required for DAG visualizations. Install with: pip install networkx")
+        raise ImportError("networkx is required for DAG visualizations. Install it with: pip install sociopathit[network]")
 
     set_style(style_mode)
 
@@ -134,7 +131,7 @@ def dag(
         except:
             # Fallback to custom hierarchical layout
             try:
-                # Enhanced column-based layout with topological ordering
+                # Column-based layout with topological ordering
                 # Identify node types by name
                 treatment_nodes = [n for n in nodes if 'treatment' in n.lower()]
                 outcome_nodes = [n for n in nodes if 'outcome' in n.lower()]
@@ -321,7 +318,8 @@ def dag(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -465,7 +463,7 @@ def dag_interactive(
         except:
             # Fallback to custom hierarchical layout
             try:
-                # Enhanced column-based layout with topological ordering
+                # Column-based layout with topological ordering
                 treatment_nodes = [n for n in nodes if 'treatment' in n.lower()]
                 outcome_nodes = [n for n in nodes if 'outcome' in n.lower()]
                 mediator_nodes = [n for n in nodes if 'mediator' in n.lower() or 'mediat' in n.lower()]

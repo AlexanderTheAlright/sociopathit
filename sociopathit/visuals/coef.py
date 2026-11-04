@@ -1,5 +1,5 @@
 """
-coef.py — Sociopath-it Visualization Module 📈
+coef.py: Sociopath-it Visualization Module
 ---------------------------------------------
 Coefficient plot with 95% confidence intervals.
 
@@ -10,6 +10,7 @@ Extras:
 - Interactive version with corrected spike margins
 """
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ import plotly.graph_objects as go
 from matplotlib.colors import Normalize
 from matplotlib import cm
 
-from ..utils.style import set_style, generate_semantic_palette, apply_titles, format_tick_labels
+from ..utils.style import set_style, generate_semantic_palette, apply_titles, format_tick_labels, get_continuous_cmap
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Helper for significance stars
@@ -42,7 +43,7 @@ def coef(
     group_col=None,
     title=None,
     subtitle=None,
-    style_mode="reviewer3",
+    style_mode="viridis",
     annotate=True,
     figsize=(9, 7),
     sort="asc",
@@ -60,8 +61,11 @@ def coef(
     # Color logic
     if color_mode == "continuous":
         norm = Normalize(vmin=df[estimate_col].min(), vmax=df[estimate_col].max())
-        cmap = cm.get_cmap("coolwarm")
-        colors = [cmap(norm(val)) for val in df[estimate_col]]
+        if style_mode == "reviewer3":
+            colors = ["#000000"] * len(df)
+        else:
+            cmap = matplotlib.colormaps[get_continuous_cmap(style_mode)]
+            colors = [cmap(0.15 + 0.7 * norm(val)) for val in df[estimate_col]]
     elif group_col and group_col in df.columns:
         groups = df[group_col].unique().tolist()
         thirds = max(1, len(groups) // 3)
@@ -132,6 +136,8 @@ def coef(
     ax.set_xlim(x_min - padding, x_max + padding)
 
     ax.set_yticks(range(len(df)))
+    # Leave room above the top row so its value label stays inside the axes
+    ax.set_ylim(-0.6, len(df) - 0.1)
     # Bold y-axis labels when significant
     y_labels = []
     for i, row in df.iterrows():
@@ -149,19 +155,18 @@ def coef(
                 tick.set_fontweight('bold')
     ax.set_xlabel("Coefficient Estimate", fontsize=13, weight="bold", color="black")
     ax.tick_params(axis="x", labelsize=11)
-    ax.grid(axis="x", linestyle=":", color="grey", linewidth=0.7, alpha=0.7)
 
     for s in ["top", "right"]:
         ax.spines[s].set_visible(False)
     for s in ["bottom", "left"]:
-        ax.spines[s].set_color("grey")
+        ax.spines[s].set_color("black")
 
-    apply_titles(fig, title, subtitle, n=len(df))
+    apply_titles(fig, title, subtitle)
 
     # Format tick labels: bold (no rotation for coefficient plots)
     format_tick_labels(ax, rotation_x=0)
 
-    fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -178,7 +183,7 @@ def coef_interactive(
     group_col=None,
     title=None,
     subtitle=None,
-    style_mode="reviewer3",
+    style_mode="viridis",
     sort="asc",
     ci_style="bracket",
     color_mode="continuous",
@@ -190,10 +195,12 @@ def coef_interactive(
     # Colors
     if color_mode == "continuous":
         norm = Normalize(vmin=df[estimate_col].min(), vmax=df[estimate_col].max())
-        cmap = cm.get_cmap("coolwarm")
+        cmap = matplotlib.colormaps[get_continuous_cmap(style_mode)]
+        shades = [0.0] * len(df) if style_mode == "reviewer3" else 0.15 + 0.7 * norm(df[estimate_col])
         colors = [
+            "rgba(0, 0, 0, 1.00)" if style_mode == "reviewer3" else
             f"rgba({int(r*255)}, {int(g*255)}, {int(b*255)}, {a:.2f})"
-            for r, g, b, a in cmap(norm(df[estimate_col]))
+            for r, g, b, a in cmap(shades)
         ]
     elif group_col and group_col in df.columns:
         groups = df[group_col].unique().tolist()

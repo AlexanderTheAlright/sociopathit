@@ -6,7 +6,7 @@ Statistical modeling and regression analysis tools.
 
 Modules:
 - model_io: Model input/output utilities
-- pubtable: Publication-ready tables
+- pubtable: Formatted HTML tables (proportions, descriptives, regressions)
 - regress: Regression models (OLS, logit, poisson, multilevel)
 - sem: Structural equation modeling and path analysis
 - descriptive: Descriptive statistics and exploratory analysis

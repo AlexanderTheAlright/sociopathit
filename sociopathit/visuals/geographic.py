@@ -1,5 +1,5 @@
 """
-geographic.py - Sociopath-it Geographic Visualizations
+geographic.py: Sociopath-it Geographic Visualizations
 -------------------------------------------------------
 Spatial data visualization for choropleth maps and point maps.
 
@@ -17,10 +17,12 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-from typing import Optional, Union
-import warnings
 
-warnings.filterwarnings('ignore')
+# plotly >= 5.24 renamed scatter_mapbox to scatter_map
+_scatter_map = getattr(px, "scatter_map", None) or px.scatter_mapbox
+_MAP_STYLE_KEY = "map_style" if hasattr(px, "scatter_map") else "mapbox_style"
+from typing import Optional, Union
+
 
 try:
     from ..utils.style import (
@@ -121,7 +123,6 @@ def point_map(
     # Styling
     ax.set_xlabel('Longitude', fontsize=12, weight='bold', color='black')
     ax.set_ylabel('Latitude', fontsize=12, weight='bold', color='black')
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -134,7 +135,8 @@ def point_map(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -187,7 +189,7 @@ def point_map_interactive(
 
     # Create scatter mapbox
     if value is not None:
-        fig = px.scatter_mapbox(
+        fig = _scatter_map(
             df,
             lat=lat,
             lon=lon,
@@ -198,7 +200,7 @@ def point_map_interactive(
             height=600,
         )
     else:
-        fig = px.scatter_mapbox(
+        fig = _scatter_map(
             df,
             lat=lat,
             lon=lon,
@@ -213,7 +215,7 @@ def point_map_interactive(
         title_text += f"<br><span style='color:grey;font-size:14px;'>{subtitle}</span>"
 
     fig.update_layout(
-        mapbox_style="open-street-map",
+        **{_MAP_STYLE_KEY: "open-street-map"},
         margin=dict(t=90, b=30, l=30, r=30),
         title=dict(text=title_text, x=0.5, xanchor="center"),
     )
@@ -413,12 +415,11 @@ def hexbin_map(
 
     # Colorbar
     cbar = fig.colorbar(hb, ax=ax)
-    cbar.set_label('Count', fontsize=11, weight='bold')
+    cbar.set_label('Count', rotation=270, labelpad=15, fontsize=11, weight='bold')
 
     # Styling
     ax.set_xlabel('Longitude', fontsize=12, weight='bold', color='black')
     ax.set_ylabel('Latitude', fontsize=12, weight='bold', color='black')
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -431,6 +432,7 @@ def hexbin_map(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig

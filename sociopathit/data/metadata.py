@@ -105,7 +105,7 @@ def extract_wave_info(data_source: Union[List[str], Dict[str, pd.DataFrame], str
         - Path to directory (will scan for files)
     pattern : str, optional
         Regex pattern to extract date components.
-        Defaults to extracting 4-digit year: r'(\d{4})'
+        Defaults to extracting 4-digit year: r'(\\d{4})'
     auto_detect : bool, default True
         Whether to auto-detect wave patterns from filenames.
 

@@ -1,5 +1,5 @@
 """
-trend.py — Sociopath-it Visualization Module
+trend.py: Sociopath-it Visualization Module
 --------------------------------------------
 Flexible line/bar trend visualizer with semantic or continuous color modes.
 
@@ -11,6 +11,7 @@ Features:
 - Interactive Plotly version
 """
 
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -19,7 +20,7 @@ import plotly.graph_objects as go
 from scipy.ndimage import gaussian_filter1d
 from matplotlib import cm
 from matplotlib import patheffects
-from ..utils.style import set_style, generate_semantic_palette, apply_titles, get_color, format_tick_labels
+from ..utils.style import set_style, generate_semantic_palette, apply_titles, get_color, format_tick_labels, legend_below, smart_format
 
 
 def _is_light_color(color):
@@ -60,12 +61,18 @@ def trend(
     shade_between=None,
     fill_area=False,
     bar_color_mode="group",  # "group" or "continuous"
+    legend_title=None,
 ):
     """
     Sociopath-it trend line or bar chart with optional smoothing, shading, and events.
+
+    Parameters
+    ----------
+    legend_title : str, optional
+        Title for the group legend. None by default. The legend sits centred
+        below the axes.
     """
     set_style(style_mode)
-    # Wider default to accommodate legend on the right
     fig, ax = plt.subplots(figsize=figsize, dpi=130)
     fig.set_facecolor("white")
     ax.set_facecolor("white")
@@ -92,7 +99,7 @@ def trend(
         gdict = {"positive": list(unique_groups)}
         palette = generate_semantic_palette(gdict, mode=style_mode)
     else:
-        cmap = cm.get_cmap("viridis")
+        cmap = matplotlib.colormaps["viridis"]
         palette = {"default": cmap(0.6)}
 
     # --- Plot types ---
@@ -148,7 +155,7 @@ def trend(
                     adjusted_positions.append(adjusted_y)
 
                     # Draw the label at adjusted position
-                    ax.text(x_pos, adjusted_y, f"{y_pos:.2f}",
+                    ax.text(x_pos, adjusted_y, smart_format(round(y_pos, 2)),
                             ha="left", va="center", fontsize=10, color="black", weight="bold",
                             bbox=dict(facecolor="white", edgecolor='#333333', linewidth=1.5,
                                       boxstyle="round,pad=0.3", alpha=0.95))
@@ -220,35 +227,17 @@ def trend(
     # --- Styling ---
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
-    ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7, alpha=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    if group:
-        legend = ax.legend(
-            title=group.replace("_", " ").title(),
-            bbox_to_anchor=(1.02, 1.0),
-            loc="upper left",
-            frameon=True,
-            facecolor="white",
-            edgecolor="grey",
-            fontsize=12,
-            title_fontsize=13,
-        )
-        legend.get_title().set_fontweight("bold")
-        legend.get_frame().set_linewidth(1.5)
-        legend.get_frame().set_alpha(0.95)
-
     # --- Title layout ---
     apply_titles(fig, title, subtitle)
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
-    # Adjust layout based on whether legend is present
     if group:
-        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
-    else:
-        fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
+        legend_below(ax, title=legend_title)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -297,7 +286,7 @@ def trend_interactive(
                 palette_hex[k] = v
         palette = palette_hex
     else:
-        cmap = cm.get_cmap("viridis")
+        cmap = matplotlib.colormaps["viridis"]
         rgba = cmap(0.6)
         palette = {"default": f"rgba({int(rgba[0]*255)},{int(rgba[1]*255)},{int(rgba[2]*255)},{rgba[3]})"}
 

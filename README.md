@@ -1,173 +1,172 @@
 # Sociopath-it
 
-**Sociopath-it** is a suite of Python tools for data cleaning, harmonization, analysis, and visualization. Built for sociologists who love code and distrust objectivity just enough to do it right.
+For those with ethics but not morals.
 
----
-
-## Overview
-
-Sociopath-it is structured into five main modules, each named with the proper degree of irony:
-
-| Module | Description                                                                                                              |
-|:-------|:-------------------------------------------------------------------------------------------------------------------------|
-| `data/` | Survey data management, file discovery, longitudinal alignment, and harmonization. Because your data is never clean enough on the first pass. |
-| `cleansing/` | Additional harmonization utilities for variable recoding and codebook sanity. |
-| `analyses/` | Statistical, causal, and machine learning tools. From OLS to SEM, propensity scores to random forests, and everything in between. |
-| `visuals/` | Comprehensive visualization suite. White backgrounds, semantic palettes, and Bourdieu-approved taste. All 24 plot types, static and interactive. |
-| `utils/` | Style functions and color palettes. The infrastructure behind the aesthetics. |
-
----
+Sociopath-it is a Python package for social scientists who work with survey data. It loads and harmonizes survey files, runs common analyses (regression, panel, causal, SEM, text), and draws figures in one house style.
 
 ## Installation
 
 ```bash
-pip install --force-reinstall --no-deps git+https://github.com/AlexanderTheAlright/sociopathit.git
+pip install git+https://github.com/AlexanderTheAlright/sociopathit.git
 ```
 
----
+The core install covers data handling, the analyses and the figures. Some functions need extra libraries, grouped as pip extras:
 
-## Package Structure
+| Extra | Installs | Used by |
+|:--|:--|:--|
+| `text` | wordcloud, nltk | `visuals.wordcloud`, `analyses.text_analysis` (NLTK tokenizing and stopwords) |
+| `network` | networkx | `visuals.dag`, `visuals.cooccur` |
+| `labels` | adjustText | label placement in `visuals.factormap` |
+| `excel` | openpyxl | the metaset workbook in `cleansing.harmonize` |
+| `stats` | pingouin | reliability statistics in `cleansing.harmonize` |
+| `ml` | shap | `analyses.ml.shap_analysis` |
+| `panel` | linearmodels | no function yet; the panel models use statsmodels |
+| `all` | all of the above | |
 
-### Data Module (`sociopathit.data`)
-
-Survey and panel data management tools. Handles the messy reality of longitudinal research.
-
-- **discovery**: Find data files, resolve paths, detect wave structures from filenames
-- **loading**: Load surveys and Stata files with automatic preprocessing and variable filtering
-- **metadata**: Extract survey metadata, wave information, and ID variables
-- **longitudinal**: Detect panel structure, align waves, build long-form datasets
-- **preparation**: Harmonize variables, handle missing codes, prepare for analysis
-
-**Example workflow:**
-```python
-from sociopathit.data.loading import load_all_surveys
-from sociopathit.data.preparation import build_harmonized_dataset
-
-# Load all surveys with specific variables
-surveys = load_all_surveys('data/', target_vars=['age', 'income', 'jobsat'])
-
-# Build harmonized long-form dataset
-df_long = build_harmonized_dataset(surveys, target_vars=['age', 'income', 'jobsat'])
+```bash
+pip install "sociopathit[text] @ git+https://github.com/AlexanderTheAlright/sociopathit.git"
+pip install "sociopathit[all] @ git+https://github.com/AlexanderTheAlright/sociopathit.git"
 ```
 
-### Analyses Module (`sociopathit.analyses`)
+When an extra is missing, the function that needs it raises an `ImportError`; for `labels`, `excel`, `network` and `text` the message names the extra to install.
 
-Statistical modeling, causal inference, and machine learning. The full toolkit.
+## Quick start
 
-- **regress**: OLS, logistic, Poisson, multilevel regression with publication-ready output
-- **pubtable**: Generate publication tables (proportions, descriptives, regression comparisons)
-- **descriptive**: Correlation matrices, crosstabs with chi-square, group summaries
-- **sem**: Path analysis, mediation models, indirect effects (new!)
-- **causal**: Propensity scores (IPW, matching), difference-in-differences, IV, RDD
-- **panel**: Fixed effects, random effects, first-difference models
-- **ml**: Scikit-learn pipelines, feature importance, classification and regression models
-- **text_analysis**: TF-IDF, topic modeling, text similarity, readability scores
-- **network**: Create networks from edgelists, adjacency matrices, co-occurrence, correlation
-
-**Example workflow:**
 ```python
+import numpy as np
+import pandas as pd
 from sociopathit.analyses.regress import ols
-from sociopathit.analyses.sem import mediation
 from sociopathit.visuals.coef import coef
+from sociopathit.visuals.bar import bar
+from sociopathit.utils.style import save_figure
 
-# Fit regression
-model = ols(df, 'outcome', ['age', 'education', 'income'])
+rng = np.random.default_rng(1)
+df = pd.DataFrame({
+    "age": rng.integers(20, 65, 300),
+    "education": rng.integers(1, 6, 300),
+    "income": rng.normal(50, 15, 300),
+})
+df["jobsat"] = 2 + 0.01 * df["age"] + 0.2 * df["education"] + rng.normal(0, 1, 300)
 
-# Test mediation
-med_model = mediation(df, x='treatment', m='mediator', y='outcome')
-indirect, se = med_model.indirect_effect(['treatment', 'mediator', 'outcome'])
+# OLS with HC1 standard errors; get_tidy() returns term, estimate, conf.low, conf.high, p.value
+model = ols(df, "jobsat", ["age", "education", "income"])
+print(model.summary())
+estimates = model.get_tidy()
 
-# Visualize coefficients
-coef(model.get_estimates())
+# Coefficient plot, saved as coef_jobsat.png and coef_jobsat.svg
+fig, ax = coef(estimates, p_col="p.value", title="Predictors of job satisfaction")
+save_figure(fig, "coef_jobsat")
+
+# Grouped bars in black and white: one column per group
+shares = pd.DataFrame({"wave": ["2023", "2024", "2025"], "value": [0, 0, 0],
+                       "Canada": [41.2, 45.0, 52.5], "United States": [35.5, 38.0, 40.8]})
+fig, ax = bar(shares, x="wave", y="value", orientation="grouped",
+              title="Share satisfied, by country", style_mode="reviewer3")
+save_figure(fig, "bar_reviewer3")
 ```
 
-### Visuals Module (`sociopathit.visuals`)
+Static plotting functions return `(fig, ax)`. Functions ending in `_interactive` return a Plotly figure.
 
-24 visualization types, all static and interactive. Consistent style, no compromises.
+## Modules
 
-**Basic Charts:**
-- **bar**: Bar charts with annotations, subplots, interactive versions
-- **hist**: Histograms with trace outlines, thresholds, group coloring
-- **boxplot**: Box plots, violin plots, raincloud plots with point overlays
-- **pie**: Pie charts with auto-collapse of small categories
-- **scatter**: Scatter plots with regression lines and confidence intervals
+### `sociopathit.data`
 
-**Statistical Visualizations:**
-- **density**: KDE plots, ridgeline plots, raincloud combinations
-- **pair**: Pair plots (scatterplot matrices) with grouping
-- **heatmap**: Correlation heatmaps with annotations
-- **cluster**: Hierarchical clustering dendrograms and clustered heatmaps
-- **coef**: Coefficient plots with confidence intervals and significance stars
+| Module | What it does |
+|:--|:--|
+| `discovery` | Finds data files and identifies waves from file names (`discover_data`, `find_latest_wave`). |
+| `loading` | Loads Stata files and folders of surveys with ID detection (`load_stata`, `load_all_surveys`, `load_and_combine`). |
+| `metadata` | Summarizes surveys and extracts wave and ID variables (`summarize_surveys`, `extract_wave_info`, `get_id_vars`). |
+| `longitudinal` | Detects panel structure, aligns waves and builds long-form data (`detect_longitudinal`, `align_longitudinal_data`, `build_longit_from_dir`). |
+| `preparation` | Harmonizes column names and codes and prepares data for models (`harmonize_columns`, `build_harmonized_dataset`, `prepare_for_analysis`). |
 
-**Regression & Diagnostics:**
-- **margins**: Marginal effects plots for regression models
-- **oddsratio**: Odds ratio forest plots for logistic models
-- **residuals**: Full regression diagnostics (residuals vs fitted, Q-Q plots, scale-location)
-- **ice**: Individual Conditional Expectation plots with PDP overlays
-- **feature**: Feature importance waterfalls and bar charts (SHAP-style)
+### `sociopathit.cleansing`
 
-**Advanced Visualizations:**
-- **factormap**: 2D and 3D factor maps for PCA/MCA with variance explained scree plots
-- **dag**: Causal directed acyclic graphs (requires networkx)
-- **cooccur**: Co-occurrence network graphs
-- **trend**: Time series with smoothing, events, shaded areas
-- **waterfall**: Cumulative contribution waterfalls
-- **wordcloud**: Word clouds with highlighted groups and gradients
+| Module | What it does |
+|:--|:--|
+| `harmonize` | Metaset-driven harmonization of a folder of survey files into processed datasets (`discover_datasets`, `load_dataset`, `harmonize_all`). |
 
-**Specialized Charts:**
-- **hierarchical**: Treemaps and sunburst charts for hierarchical data
-- **flow**: Sankey and alluvial diagrams for flow visualization
-- **horizon**: Horizon charts for space-efficient time series
-- **geographic**: Point maps, choropleths, hexbin density maps
+### `sociopathit.analyses`
 
-**Example workflow:**
+| Module | What it does |
+|:--|:--|
+| `regress` | OLS, logit, Poisson and multilevel models with survey weights and HC1 standard errors (`ols`, `logit`, `poisson`, `multilevel`, `regress`, `compare_models`, `marginal_effects`). |
+| `pubtable` | HTML tables of proportions, descriptives and regression results (`proportion_table`, `descriptive_table`, `regression_table`, `save_table`). |
+| `descriptive` | Correlation matrices, crosstabs with chi-square, grouped summaries and normality tests (`correlation_matrix`, `crosstab`, `group_summary`, `distribution_test`). |
+| `sem` | Path analysis, mediation and CFA (`path_analysis`, `mediation`, `cfa`). |
+| `causal` | Propensity scores, difference-in-differences, IV and regression discontinuity (`propensity_score`, `difference_in_differences`, `instrumental_variables`, `regression_discontinuity`). |
+| `panel` | Fixed effects, random effects and first differences, with the Hausman test (`fixed_effects`, `random_effects`, `first_differences`, `hausman_test`). |
+| `ml` | scikit-learn pipelines, training with cross-validation and feature importance (`build_pipeline`, `train_model`, `feature_importance`, `shap_analysis`). |
+| `model_io` | Saves and loads model results as JSON or CSV, including CSV for R (`save_model`, `load_model`, `export_for_r`). |
+| `text_analysis` | Text cleaning, readability, similarity, TF-IDF, n-grams and sentiment (`clean_text`, `complexity_scores`, `create_tfidf_matrix`, `analyze_sentiment`, `analyze_corpus`). |
+| `network` | Edge lists, adjacency matrices, co-occurrence and bipartite networks (`create_edgelist`, `create_adjacency_matrix`, `cooccurrence_network`, `network_summary`). |
+
+### `sociopathit.visuals`
+
+Each module has a static matplotlib function and, in most cases, an `_interactive` Plotly version.
+
+| Module | What it draws |
+|:--|:--|
+| `bar` | Vertical, horizontal, stacked and grouped bars; faceted bars (`bar`, `bar_subplots`). |
+| `hist` | Histograms with optional group colouring and threshold lines (`histogram`). |
+| `boxplot` | Box and violin plots (`boxplot`, `boxplot_subplots`). |
+| `density` | Kernel densities, ridgelines and raincloud plots (`kde`, `ridgeline`, `raincloud`, `ryder`). |
+| `scatter` | Scatter plots with linear or LOWESS fits and a 95% prediction band (`scatterplot`). |
+| `trend` | Lines or bars over time, with event lines and shading (`trend`). |
+| `pie` | Pie charts that collapse small categories (`pie`). |
+| `pair` | Scatterplot matrices (`pair`). |
+| `heatmap` | Correlation and distribution heatmaps (`heatmap`, `heatmap_distribution`). |
+| `cluster` | Hierarchical clustering dendrograms and clustered heatmaps (`cluster`, `heatmap_cluster`). |
+| `coef` | Coefficient plots with confidence intervals and significance stars (`coef`). |
+| `oddsratio` | Odds ratio forest plots for logistic models (`oddsratio`, `oddsratio_comparison`). |
+| `margins` | Predicted values across a predictor, overall or by group (`margins`, `margins_comparison`). |
+| `residuals` | Regression diagnostic panels and residual histograms (`residuals`, `residuals_histogram`). |
+| `ice` | Individual conditional expectation curves with a partial dependence line (`ice`, `ice_comparison`). |
+| `feature` | Feature importance bars and waterfalls (`feature_importance_bar`, `feature_waterfall`). |
+| `factormap` | Factor maps for PCA, MCA or CA in 2D and 3D, and scree plots (`factormap`, `factormap_3d`, `variance_explained`). |
+| `apc` | Age-period-cohort heatmaps (`apc_heatmap`). |
+| `dag` | Causal DAGs (`dag`, `dag_from_formula`). Needs `network`. |
+| `cooccur` | Word co-occurrence networks (`cooccur`). Needs `network`. |
+| `waterfall` | Waterfall charts of cumulative change (`waterfall`). |
+| `wordcloud` | Word clouds with highlighted groups (`wordcloud`). Needs `text`. |
+| `hierarchical` | Treemaps and sunbursts (`treemap`, `sunburst`). |
+| `flow` | Sankey and alluvial diagrams (`sankey`, `alluvial`). |
+| `horizon` | Horizon charts for many time series (`horizon`, `horizon_panel`). |
+| `geographic` | Point maps, choropleths and hexbin maps (`point_map`, `choropleth`, `hexbin_map`). |
+
+### `sociopathit.utils`
+
+| Module | What it does |
+|:--|:--|
+| `style` | Style modes, palettes, titles, the shared legend below the axes, and `save_figure` (PNG and SVG). |
+| `optional` | Imports optional libraries on demand and names the pip extra when one is missing. |
+
+## Style modes
+
+Every plotting function takes `style_mode`. The default is `"viridis"`.
+
+| Mode | Look | Use it for |
+|:--|:--|:--|
+| `viridis` | Viridis colours, perceptually uniform | Default colour figures |
+| `reviewer3` | Black, white and greys, with hatching on bars | Print journals and black-and-white submissions |
+| `sentiment` | Green for positive, red for negative | Scales with a good and a bad end |
+| `fiery` | Reds, oranges and purples | High-contrast colour figures |
+| `plainjane` | Light red and blue | Two-sided contrasts in plain colours |
+
 ```python
-from sociopathit.visuals.coef import coef_interactive
-from sociopathit.visuals.margins import margins
-from sociopathit.visuals.ice import ice
-
-# Interactive coefficient plot
-fig = coef_interactive(model.get_estimates(), style_mode='viridis')
-fig.show()
-
-# Marginal effects
-margins(model, variable='education', ci=True)
-
-# ICE plot for machine learning model
-ice(ml_model, X=df, feature='age', sample_size=50, pdp=True)
+fig, ax = bar(shares, x="wave", y="value", orientation="grouped", style_mode="reviewer3")
 ```
 
-### Utils Module (`sociopathit.utils`)
+Figures have white backgrounds, a title centred over the plot, and one legend centred below the axes. `save_figure(fig, "name")` writes `name.png` (300 dpi) and `name.svg`.
 
-Style infrastructure and color palettes.
+## Tests
 
-- **style**: Color palettes (viridis, sentiment, fiery, plainjane), plot themes, annotation helpers
+```bash
+pip install pytest
+pytest -q
+```
 
----
+The smoke tests in `tests/` call every public function in `sociopathit.visuals` and `sociopathit.analyses` on small synthetic data. Functions whose optional extra is not installed are skipped.
 
-## Testing
+## License
 
-All modules are comprehensively tested in three test notebooks:
-
-- **tests/utilities_test.ipynb**: All data utilities (discovery, loading, metadata, longitudinal, preparation)
-- **tests/analyses_test.ipynb**: All analysis modules (regression, SEM, causal, panel, ML, text, network)
-- **tests/visuals_test.ipynb**: All 24 visualization types (static and interactive)
-
----
-
-## Style Philosophy
-
-Plots follow strict aesthetic guidelines: white backgrounds, semantic color palettes, clear annotations, and absolutely no gratuitous 3D pie charts. Every visualization has both static (matplotlib/seaborn) and interactive (plotly) versions.
-
-Available style modes:
-- **viridis**: Perceptually uniform gradient (default)
-- **sentiment**: Red (negative) to green (positive) semantic coloring
-- **fiery**: Warm gradient for emphasis
-- **plainjane**: Simple greys and blues for minimalist presentations
-- **reviewer3**: Black and white gradient for your toughest reviewer
-
----
-
-## ⚠️ Disclaimer
-
-This package will not fix your model fit, your p-values, or your moral compass. But it will make your plots beautiful and your workflow reproducible.
+MIT. See `LICENSE`.

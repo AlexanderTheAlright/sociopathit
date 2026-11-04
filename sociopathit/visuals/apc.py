@@ -1,8 +1,8 @@
 """
-apc.py — Sociopath-it Visualization Module
+apc.py: Sociopath-it Visualization Module
 ------------------------------------------
-Age-Period-Cohort (APC) visualizations styled according to the Generative Guide 🎨
-with full support for multi-style themes (fiery, viridis, sentiment,
+Age-Period-Cohort (APC) visualizations in the Sociopath-it style
+modes (fiery, viridis, sentiment,
 plainjane, reviewer3).
 
 Features:
@@ -15,9 +15,10 @@ Features:
 
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from matplotlib.patches import Rectangle, RegularPolygon
+from matplotlib.patches import Patch, Rectangle, RegularPolygon
 from matplotlib import cm
 
 # Visuals utils
@@ -26,6 +27,7 @@ from ..utils.style import (
     apply_titles,
     generate_semantic_palette,
     format_tick_labels,
+    legend_below,
 )
 
 
@@ -293,33 +295,16 @@ def _apc_rectangular(
         if n:
             legend_lines.append(f"N: {n:,}")
 
-        legend_text = "\n".join(legend_lines)
-
-        leg = ax.legend(
-            [legend_text],
-            bbox_to_anchor=(1.15, 1.0),
-            loc="upper left",
-            frameon=True,
-            facecolor="white",
-            edgecolor="grey",
-            fontsize=9,
-            title="APC Info",
-            title_fontsize=10,
-        )
-        leg.get_title().set_fontweight("bold")
-        leg.get_frame().set_linewidth(1.5)
-        leg.get_frame().set_alpha(0.95)
 
     # ─── Layout ────────────────────────────────────────────────────────────────
-    has_subtitle = bool(subtitle and str(subtitle).strip())
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
+    # Info line centred below the axes
     if show_legend:
-        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if has_subtitle else 0.94))
-    else:
-        fig.tight_layout(rect=(0, 0, 1, 0.9 if has_subtitle else 0.94))
+        legend_below(ax, handles=[Patch(alpha=0)], labels=["  |  ".join(legend_lines)], fontsize=9)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     return fig, ax
 
@@ -364,7 +349,7 @@ def _apc_hexagonal(
     else:
         cmap_name = "RdBu_r"
 
-    cmap_obj = plt.get_cmap(cmap_name)
+    cmap_obj = matplotlib.colormaps[cmap_name]
     norm = plt.Normalize(vmin=vmin, vmax=vmax)
 
     # ─── Hexagon parameters ────────────────────────────────────────────────────
@@ -508,31 +493,15 @@ def _apc_hexagonal(
         if n:
             legend_lines.append(f"N: {n:,}")
 
-        legend_text = "\n".join(legend_lines)
-
-        # Position legend far to the right, above colorbar
-        ax.text(
-            1.40, 0.65, legend_text,
-            transform=ax.transAxes,
-            ha='left', va='center',
-            fontsize=9,
-            weight='bold',
-            bbox=dict(
-                boxstyle='round,pad=0.8',
-                facecolor='white',
-                edgecolor='black',
-                linewidth=1.5,
-                alpha=0.98
-            )
-        )
-
     # ─── Layout ────────────────────────────────────────────────────────────────
-    has_subtitle = bool(subtitle and str(subtitle).strip())
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
-    plt.tight_layout(rect=(0, 0, 0.88, 0.9 if has_subtitle else 0.94))
+    # Info line centred below the axes
+    if show_legend:
+        legend_below(ax, handles=[Patch(alpha=0)], labels=["  |  ".join(legend_lines)], fontsize=9)
+    plt.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     return fig, ax
 

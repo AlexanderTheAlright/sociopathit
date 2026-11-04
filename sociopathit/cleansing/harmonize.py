@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-harmonize.py — Sociopath-it Data Harmonization Pipeline
+harmonize.py: Sociopath-it Data Harmonization Pipeline
 -------------------------------------------------------
-Comprehensive, flexible data harmonization for survey/panel research.
+Data harmonization for survey and panel research.
 
 FEATURES:
 • Multi-format support (.dta, .csv, .xlsx, .sav, .sas7bdat)
@@ -35,9 +35,7 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype
-import openpyxl
-from openpyxl.worksheet.table import Table, TableStyleInfo
-from openpyxl.utils import get_column_letter
+from ..utils.optional import require
 
 # Optional dependencies
 try:
@@ -45,7 +43,6 @@ try:
     STATA_AVAILABLE = True
 except ImportError:
     STATA_AVAILABLE = False
-    warnings.warn("Stata export unavailable. Install with: pip install pandas")
 
 try:
     import pingouin as pg
@@ -62,7 +59,6 @@ except ImportError:
     BERTOPIC_AVAILABLE = False
 
 # Logging
-warnings.filterwarnings("ignore")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
@@ -99,7 +95,7 @@ _MAX_STATA_STR = 244
 _BAD_CHARS = {
     "'": "'", "'": "'", "'": "'", "`": "'",
     """: '"', """: '"',
-    "–": "-", "—": "-", "…": "...",
+    "\u2013": "-", "\u2014": "-", "\u2026": "...",
     "\u00a0": " ", "\u2018": "'", "\u2019": "'",
     "\u201c": '"', "\u201d": '"',
     "\u2013": "-", "\u2014": "-", "\u2122": "TM",
@@ -422,6 +418,9 @@ class MetadataManager:
 
         # Write Excel with tables
         try:
+            require("openpyxl", "excel")
+            from openpyxl.worksheet.table import Table, TableStyleInfo
+            from openpyxl.utils import get_column_letter
             with pd.ExcelWriter(self.path, engine='openpyxl', mode='w') as writer:
                 sheets = {
                     'metadata': self.metadata,
@@ -1057,7 +1056,7 @@ def harmonize_all():
             harmonizer.export_csv(DIR_PROCESSED)
 
             harmonized[dataset_id] = harmonizer
-            logger.info(f"{dataset_id}: Processing complete ✓")
+            logger.info(f"{dataset_id}: Processing complete")
 
         except Exception as e:
             logger.error(f"{dataset_id}: Processing failed: {e}")
@@ -1074,7 +1073,7 @@ def harmonize_all():
     if errors:
         logger.warning(f"Errors occurred for {len(errors)} dataset(s): {list(errors.keys())}")
     else:
-        logger.info("No errors 🎉")
+        logger.info("No errors")
 
     logger.info("═══ Harmonization Pipeline Complete ═══")
     return harmonized

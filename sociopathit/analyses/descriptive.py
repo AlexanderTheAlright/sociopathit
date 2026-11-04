@@ -1,7 +1,7 @@
 """
-descriptive.py  Sociopath-it Descriptive Statistics Module
+descriptive.py: Sociopath-it Descriptive Statistics Module
 ------------------------------------------------------------
-Comprehensive descriptive statistics and exploratory data analysis.
+Descriptive statistics and exploratory data analysis.
 
 Features:
 - Correlation matrices (Pearson, Spearman, Kendall)
@@ -31,12 +31,11 @@ except ImportError:
     SCIPY_AVAILABLE = False
     warnings.warn("scipy not available. Install with: pip install scipy")
 
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CORRELATION ANALYSIS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def correlation_matrix(
     df: pd.DataFrame,
@@ -151,9 +150,9 @@ def correlation_matrix(
     return corr_mat, pval_mat
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CROSS-TABULATION
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def crosstab(
     df: pd.DataFrame,
@@ -265,9 +264,9 @@ def crosstab(
     return result
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # GROUPED SUMMARIES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def group_summary(
     df: pd.DataFrame,
@@ -378,9 +377,9 @@ def group_summary(
         return result.reset_index()
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # DISTRIBUTION TESTS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def distribution_test(
     df: pd.DataFrame,
@@ -478,9 +477,9 @@ def distribution_test(
         raise ValueError(f"Unsupported test: {test}")
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CONVENIENCE FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def describe_by_group(
     df: pd.DataFrame,
@@ -489,7 +488,7 @@ def describe_by_group(
     weight: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Comprehensive grouped descriptive statistics.
+    Grouped descriptive statistics.
 
     Wrapper around group_summary with common statistics.
 

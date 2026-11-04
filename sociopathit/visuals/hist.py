@@ -1,8 +1,8 @@
 """
-hist.py — Sociopath-it Visualization Module
+hist.py: Sociopath-it Visualization Module
 -------------------------------------------
-Distribution histograms styled according to the Generative Guide 🎨
-with full support for multi-style themes (fiery, viridis, sentiment,
+Distribution histograms in the Sociopath-it style
+modes (fiery, viridis, sentiment,
 plainjane, reviewer3).
 
 Features:
@@ -14,13 +14,16 @@ Features:
 
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from matplotlib import cm
 from scipy.interpolate import make_interp_spline
 
 # Correct relative import (visuals → utils)
-from ..utils.style import set_style, apply_titles, get_data_element_kwargs, get_color, format_tick_labels
+from matplotlib.patches import Patch
+from ..utils.style import legend_below
+from ..utils.style import set_style, apply_titles, get_data_element_kwargs, get_color, format_tick_labels, generate_semantic_palette, get_hatches
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -83,8 +86,8 @@ def histogram(
     if color_by and color_by in df.columns:
         # Two-variable coloring: split by color_by values
         color_var_vals = df[color_by].dropna().unique()
-        cmap = cm.get_cmap("viridis")
-        colors_map = {v: cmap(i / len(color_var_vals)) for i, v in enumerate(color_var_vals)}
+        colors_map = generate_semantic_palette({"positive": list(color_var_vals)}, mode=style_mode)
+        hatch_map = dict(zip(color_var_vals, get_hatches(len(color_var_vals), style_mode)))
 
         # Plot stacked histogram
         for i, cv in enumerate(color_var_vals):
@@ -93,6 +96,7 @@ def histogram(
                 subset,
                 bins=bins,
                 color=colors_map[cv],
+                hatch=hatch_map[cv],
                 alpha=0.7,
                 label=f"{color_by}={cv}",
                 **get_data_element_kwargs()
@@ -101,10 +105,10 @@ def histogram(
         # Single color
         color = color or (
             cm.plasma(0.7) if style_mode == "fiery"
-            else cm.get_cmap("viridis")(0.6) if style_mode == "viridis"
+            else matplotlib.colormaps["viridis"](0.6) if style_mode == "viridis"
             else cm.Greens(0.6) if style_mode == "sentiment"
             else cm.Blues(0.6) if style_mode == "plainjane"
-            else cm.Greys(0.5)   # reviewer3
+            else "#000000"       # reviewer3: one group is black
         )
 
         # ─── Plot ───────────────────────────────────────────────────────────────
@@ -141,12 +145,11 @@ def histogram(
 
     # Add 20% padding on top for better context (keep bottom at natural value)
     padding = y_range * 0.20
-    ax.set_ylim(y_min, y_max + padding)
+    ax.set_ylim(0, y_max + padding)
 
     # ─── Axis styling ───────────────────────────────────────────────────────────
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.set_ylabel("Frequency", fontsize=12, weight="bold", color="black")
-    ax.grid(axis="y", color="grey", linestyle=":", linewidth=0.7)
     for side in ["top", "right"]:
         ax.spines[side].set_visible(False)
 
@@ -154,48 +157,21 @@ def histogram(
     apply_titles(fig, title, subtitle, n=n)
 
     # ─── Legend ────────────────────────────────────────────────────────────────
-    if show_legend:
-        if color_by:
-            legend = ax.legend(
-                bbox_to_anchor=(1.02, 1.0),
-                loc="upper left",
-                frameon=True,
-                facecolor="white",
-                edgecolor="grey",
-                fontsize=10,
-                title=color_by.replace("_", " ").title(),
-                title_fontsize=11,
-            )
-            legend.get_title().set_fontweight("bold")
-            legend.get_frame().set_linewidth(1.5)
-            legend.get_frame().set_alpha(0.95)
-        else:
-            legend_text = f"{x.replace('_', ' ').title()}  |  Bins: {bins}  |  N: {n:,}"
-            leg = ax.legend(
-                [legend_text],
-                bbox_to_anchor=(1.02, 1.0),
-                loc="upper left",
-                frameon=True,
-                facecolor="white",
-                edgecolor="grey",
-                fontsize=10,
-                title="Distribution Info",
-                title_fontsize=11,
-            )
-            leg.get_title().set_fontweight("bold")
-            leg.get_frame().set_linewidth(1.5)
-            leg.get_frame().set_alpha(0.95)
-
     # ─── Layout ────────────────────────────────────────────────────────────────
-    has_subtitle = bool(subtitle and str(subtitle).strip())
-
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
+    # One legend centred below the axes
     if show_legend:
-        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if has_subtitle else 0.94))
-    else:
-        fig.tight_layout(rect=(0, 0, 1, 0.9 if has_subtitle else 0.94))
+        if color_by:
+            legend_below(ax)
+        else:
+            info = f"{x.replace('_', ' ').title()}  |  Bins: {bins}"
+            if n:
+                info += f"  |  N: {n:,}"
+            legend_below(ax, handles=[Patch(alpha=0)], labels=[info])
+
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -220,7 +196,7 @@ def histogram_interactive(
     if color_by and color_by in df.columns:
         # Multi-variable histogram
         color_var_vals = df[color_by].dropna().unique()
-        cmap = cm.get_cmap("viridis")
+        cmap = matplotlib.colormaps["viridis"]
 
         for i, cv in enumerate(color_var_vals):
             subset = df[df[color_by] == cv][x].dropna()
@@ -236,7 +212,7 @@ def histogram_interactive(
             ))
     else:
         # Single histogram
-        cmap = cm.get_cmap("viridis")
+        cmap = matplotlib.colormaps["viridis"]
         rgba = cmap(0.6)
         color_str = f"rgba({int(rgba[0]*255)},{int(rgba[1]*255)},{int(rgba[2]*255)},{rgba[3]})"
 

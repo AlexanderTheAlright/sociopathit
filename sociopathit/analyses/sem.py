@@ -1,5 +1,5 @@
 """
-sem.py  Sociopath-it Structural Equation Modeling Module
+sem.py: Sociopath-it Structural Equation Modeling Module
 ---------------------------------------------------------
 Path analysis and structural equation modeling for sociological research.
 
@@ -33,12 +33,11 @@ except ImportError:
     STATSMODELS_AVAILABLE = False
     warnings.warn("statsmodels not available. Install with: pip install statsmodels")
 
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # PATH MODEL CLASS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 class PathModel:
     """
@@ -347,9 +346,9 @@ class PathModel:
         return direct
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CONVENIENCE FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def mediation(
     df: pd.DataFrame,
@@ -448,9 +447,9 @@ def path_analysis(
     return model
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # FUTURE: MEASUREMENT MODELS (CFA)
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def cfa(
     df: pd.DataFrame,
@@ -486,9 +485,9 @@ def cfa(
     )
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # FUTURE: R LAVAAN INTERFACE
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def lavaan_interface(
     df: pd.DataFrame,

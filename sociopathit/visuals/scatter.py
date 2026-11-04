@@ -1,5 +1,5 @@
 """
-scatter.py — Sociopath-it Visualization Module
+scatter.py: Sociopath-it Visualization Module
 ----------------------------------------------
 Semantic scatterplots with optional grouping and regression lines.
 Supports dynamic theme switching from Sociopath-it style engine.
@@ -7,12 +7,13 @@ Supports dynamic theme switching from Sociopath-it style engine.
 Features:
 - Static and interactive versions
 - Group-based coloring
-- Regression lines with confidence intervals
+- Regression lines with a 95% prediction band (fitted value +/- 1.96 SD of residuals)
 - LOWESS smoothing
 """
 
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from scipy.stats import linregress
@@ -24,7 +25,9 @@ from ..utils.style import (
     apply_titles,
     generate_semantic_palette,
     format_tick_labels,
+    legend_below,
 )
+from matplotlib.patches import Patch
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -64,21 +67,29 @@ def scatterplot(
     palette : dict, optional
         Custom colour mapping; auto-generated if None.
     ci : bool, default True
-        Show shaded confidence intervals around regression lines.
+        Shade a 95% prediction band around each linear fit: the fitted value
+        plus or minus 1.96 times the standard deviation of the residuals. It
+        shows where about 95% of observations fall, not the uncertainty of
+        the fitted line, so it is not a confidence interval. Ignored when
+        ``smooth=True``.
     line : bool, default True
         Draw regression line(s).
     smooth : bool, default False
         Apply LOWESS smoothing.
     legend_title : str, optional
-        Custom legend title.
+        Legend title. None by default.
     alpha : float, default 0.8
         Marker transparency.
     s : int, default 50
         Marker size.
-    figsize : tuple, default (7, 5)
+    figsize : tuple, default (10, 6)
         Figure size.
     style_mode : str, default 'viridis'
         One of {'fiery','viridis','sentiment','plainjane','reviewer3'}.
+
+    Returns
+    -------
+    fig, ax : matplotlib Figure and Axes
     """
     from statsmodels.nonparametric.smoothers_lowess import lowess
 
@@ -111,13 +122,16 @@ def scatterplot(
         import matplotlib.cm as cm
         palette = {"default": (
             cm.plasma(0.7) if style_mode == "fiery" else
-            cm.get_cmap("viridis")(0.7) if style_mode == "viridis" else
+            matplotlib.colormaps["viridis"](0.7) if style_mode == "viridis" else
             cm.Greens(0.7) if style_mode == "sentiment" else
             cm.Blues(0.7) if style_mode == "plainjane" else
             cm.Greys(0.5)
         )}
 
     # ─── Plot points and lines ────────────────────────────────────────────────
+    band_drawn = False
+    # Black outlines in reviewer3 keep white markers visible on a white page
+    point_edge = "black" if style_mode == "reviewer3" else "white"
     if group:
         for g, dfg in df.groupby(group):
             color = palette.get(g, "grey")
@@ -125,7 +139,7 @@ def scatterplot(
                 dfg[x], dfg[y],
                 s=s, alpha=alpha,
                 color=color,
-                edgecolor="white",
+                edgecolor=point_edge,
                 linewidth=0.6,
                 label=str(g),
                 zorder=3,
@@ -142,12 +156,12 @@ def scatterplot(
                     ax.plot(xs, y_pred, color=color, lw=2, zorder=4)
                     if ci:
                         resid = dfg[y] - (intercept + slope * dfg[x])
-                        y_std = np.std(resid)
-                        ci_band = 1.96 * y_std
+                        pred_band = 1.96 * np.std(resid)
+                        band_drawn = True
                         ax.fill_between(
                             xs,
-                            y_pred - ci_band,
-                            y_pred + ci_band,
+                            y_pred - pred_band,
+                            y_pred + pred_band,
                             color=color,
                             alpha=0.15,
                             zorder=2,
@@ -156,7 +170,7 @@ def scatterplot(
     else:
         ax.scatter(df[x], df[y], s=s, alpha=alpha,
                    color=palette["default"],
-                   edgecolor="white", linewidth=0.5)
+                   edgecolor=point_edge, linewidth=0.5)
         if line and len(df) >= 3:
             slope, intercept, *_ = linregress(df[x], df[y])
             xs = np.linspace(df[x].min(), df[x].max(), 200)
@@ -164,87 +178,36 @@ def scatterplot(
             ax.plot(xs, y_pred, color=palette["default"], lw=2)
             if ci:
                 resid = df[y] - (intercept + slope * df[x])
-                y_std = np.std(resid)
-                ci_band = 1.96 * y_std
-                ax.fill_between(xs, y_pred - ci_band, y_pred + ci_band,
+                pred_band = 1.96 * np.std(resid)
+                band_drawn = True
+                ax.fill_between(xs, y_pred - pred_band, y_pred + pred_band,
                                 color=palette["default"], alpha=0.15)
 
-    # ─── Widen y-axis window to avoid misleading narrow ranges ───────────────
-    # Check if ACTUAL DATA appears to be percentage (0-100) or proportion (0-1)
-    data_max = df[y].max()
-    data_min = df[y].min()
-    data_range = data_max - data_min
-
-    # Use small tolerance for floating point comparison
-    is_percentage = (data_max <= 100.0 + 1e-9 and data_min >= -1e-9)
-    is_proportion = (data_max <= 1.0 + 1e-9 and data_min >= -1e-9)
-
-    if is_percentage:
-        # For percentage data: use data range for padding, then clamp to [0, 100]
-        padding = data_range * 0.20
-        new_min = max(0, data_min - padding)
-        new_max = min(100.0, data_max + padding)
-        # If the range is very narrow, widen to show at least 20% of the full scale
-        if data_range < 20:  # Less than 20 percentage points
-            center = (data_min + data_max) / 2
-            new_min = max(0, center - 15)  # At least 30% window (15% on each side)
-            new_max = min(100.0, center + 15)
-    elif is_proportion:
-        # For proportion data: use data range for padding, then clamp to [0, 1]
-        padding = data_range * 0.20
-        new_min = max(0, data_min - padding)
-        new_max = min(1.0, data_max + padding)
-        if data_range < 0.2:  # Less than 0.2 (20% of scale)
-            center = (data_min + data_max) / 2
-            new_min = max(0, center - 0.15)
-            new_max = min(1.0, center + 0.15)
-    else:
-        # For non-percentage data: use autoscaled limits for padding
-        y_min, y_max = ax.get_ylim()
-        y_range = y_max - y_min
-        padding = y_range * 0.20
-        new_min = y_min - padding
-        new_max = y_max + padding
-
-    ax.set_ylim(new_min, new_max)
+    # Scatter axes keep matplotlib autoscaling: a scatter has no zero baseline.
 
     # ─── Axis aesthetics ──────────────────────────────────────────────────────
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
     ax.set_ylabel(y.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
     ax.tick_params(axis='both', which='major', labelsize=12)
-    ax.grid(axis="y", color="grey", linestyle=":", linewidth=0.7)
     ax.set_axisbelow(True)
     for side in ["top", "right"]:
         ax.spines[side].set_visible(False)
 
     # ─── Titles & Legend ──────────────────────────────────────────────────────
     apply_titles(fig, title, subtitle)
-    if group:
-        leg_title = legend_title or group.replace("_", " ").title()
-        legend = ax.legend(
-            title=leg_title,
-            bbox_to_anchor=(1.02, 1.0),
-            loc="upper left",
-            fontsize=13,
-            title_fontsize=14,
-            frameon=True,
-            facecolor="white",
-            edgecolor="grey",
-        )
-        legend.get_title().set_fontweight("bold")
-        legend.get_frame().set_alpha(0.95)
-        legend.get_frame().set_linewidth(1.5)
-
-    has_subtitle = bool(subtitle and str(subtitle).strip())
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
-    # Adjust layout based on whether legend is present
-    if group:
-        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if has_subtitle else 0.94))
-    else:
-        fig.tight_layout(rect=(0, 0, 1, 0.9 if has_subtitle else 0.94))
+    # One legend below the axes: groups, plus the prediction band if drawn
+    handles, labels = ax.get_legend_handles_labels()
+    if band_drawn:
+        handles.append(Patch(facecolor="grey", alpha=0.25, edgecolor="none"))
+        labels.append("95% prediction band (\u00b11.96 SD of residuals)")
+    if group or band_drawn:
+        legend_below(ax, handles=handles, labels=labels, title=legend_title)
+
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -280,7 +243,7 @@ def scatterplot_interactive(
                 palette_hex[k] = v
         palette = palette_hex
     else:
-        cmap = cm.get_cmap("viridis")
+        cmap = matplotlib.colormaps["viridis"]
         rgba = cmap(0.7)
         palette = {"default": f"rgba({int(rgba[0]*255)},{int(rgba[1]*255)},{int(rgba[2]*255)},{rgba[3]})"}
 

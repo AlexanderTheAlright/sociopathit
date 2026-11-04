@@ -1,7 +1,7 @@
 """
-pubtable.py  Sociopath-it Publication Tables Module
+pubtable.py: Sociopath-it Publication Tables Module
 ----------------------------------------------------
-Create publication-ready HTML tables with clean, minimal formatting.
+Create HTML tables with minimal formatting for papers and reports.
 
 Features:
 - Proportion tables with confidence intervals
@@ -23,26 +23,24 @@ import numpy as np
 import pandas as pd
 from typing import Optional, List, Dict, Union
 from scipy import stats
-import warnings
-
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+# ==============================================================================
 # HELPER FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def _format_number(x: float, decimals: int = 2) -> str:
     """Format number with specified decimal places."""
     if pd.isna(x):
-        return ""
+        return "\u2014"
     return f"{x:.{decimals}f}"
 
 
 def _format_pvalue(p: float) -> str:
     """Format p-value following publication standards."""
     if pd.isna(p):
-        return ""
+        return "\u2014"
     if p < 0.001:
         return "<.001"
     elif p < 0.01:
@@ -68,7 +66,7 @@ def _significance_stars(p: float) -> str:
 def _ci_string(lower: float, upper: float, decimals: int = 2) -> str:
     """Format confidence interval as [lower, upper]."""
     if pd.isna(lower) or pd.isna(upper):
-        return ""
+        return "\u2014"
     return f"[{lower:.{decimals}f}, {upper:.{decimals}f}]"
 
 
@@ -122,9 +120,9 @@ def _apply_table_style() -> str:
     """
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # PROPORTION TABLES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def proportion_table(
     df: pd.DataFrame,
@@ -138,7 +136,7 @@ def proportion_table(
     show_n: bool = True,
 ) -> str:
     """
-    Create publication-ready proportion table with confidence intervals.
+    Create a proportion table with confidence intervals.
 
     Parameters
     ----------
@@ -201,7 +199,7 @@ def proportion_table(
                 ci_upper = min(100, (center + margin) * 100)
                 ci_str = _ci_string(ci_lower, ci_upper, decimals)
             else:
-                ci_str = ""
+                ci_str = "\u2014"
 
             results.append({
                 row_var: cat,
@@ -255,9 +253,9 @@ def proportion_table(
     return html
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # DESCRIPTIVE STATISTICS TABLES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def descriptive_table(
     df: pd.DataFrame,
@@ -270,7 +268,7 @@ def descriptive_table(
     var_labels: Optional[Dict[str, str]] = None,
 ) -> str:
     """
-    Create publication-ready descriptive statistics table.
+    Create a descriptive statistics table.
 
     Parameters
     ----------
@@ -340,7 +338,7 @@ def descriptive_table(
             for stat_name in stats:
                 val = weighted_stat(df[var], weights, stat_name)
                 if stat_name == "n":
-                    row[stat_name.upper()] = int(val) if not pd.isna(val) else ""
+                    row[stat_name.upper()] = int(val) if not pd.isna(val) else "\u2014"
                 else:
                     row[stat_name.capitalize()] = _format_number(val, decimals)
             results.append(row)
@@ -355,7 +353,7 @@ def descriptive_table(
                 for stat_name in stats:
                     val = weighted_stat(group_df[var], group_weights, stat_name)
                     if stat_name == "n":
-                        row[stat_name.upper()] = int(val) if not pd.isna(val) else ""
+                        row[stat_name.upper()] = int(val) if not pd.isna(val) else "\u2014"
                     else:
                         row[stat_name.capitalize()] = _format_number(val, decimals)
                 results.append(row)
@@ -389,9 +387,9 @@ def descriptive_table(
     return html
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # REGRESSION COEFFICIENT TABLES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def regression_table(
     models: Union[pd.DataFrame, List[pd.DataFrame], Dict[str, List[pd.DataFrame]]],
@@ -408,7 +406,7 @@ def regression_table(
     is_multilevel: bool = False,
 ) -> str:
     """
-    Create publication-ready regression coefficient table with support for grouped models and multilevel models.
+    Create a regression coefficient table with support for grouped models and multilevel models.
 
     Parameters
     ----------
@@ -511,7 +509,7 @@ def regression_table(
             term_data = model_df[model_df['term'] == term]
 
             if term_data.empty:
-                coef_row[model_names[i]] = ""
+                coef_row[model_names[i]] = "\u2014"
             else:
                 est = term_data['estimate'].iloc[0]
                 p = term_data['p.value'].iloc[0]
@@ -823,9 +821,9 @@ def _regression_table_multilevel(
     return html
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # SAVE TO FILE
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def save_table(html: str, filepath: str):
     """

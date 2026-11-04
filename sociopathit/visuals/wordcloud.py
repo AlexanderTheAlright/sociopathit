@@ -1,7 +1,7 @@
 """
-wordcloud.py — Sociopath-it Visuals ☁️
+wordcloud.py: Sociopath-it Visuals
 --------------------------------------
-Flexible static and interactive wordclouds with consistent Sociopath-it style.
+Static and interactive wordclouds with consistent Sociopath-it style.
 
 Supports:
 - Matplotlib / WordCloud static clouds
@@ -12,9 +12,10 @@ Supports:
 
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
 from ..utils.style import set_style, apply_titles
+from ..utils.optional import require
 import plotly.graph_objects as go
 from matplotlib import cm
 
@@ -70,7 +71,7 @@ def wordcloud(
     if not freq_dict:
         raise ValueError("No frequencies provided.")
 
-    cmap_obj = cm.get_cmap(cmap or "viridis")
+    cmap_obj = matplotlib.colormaps[cmap or "viridis"]
     max_f = max(freq_dict.values())
     min_f = min(freq_dict.values())
 
@@ -100,6 +101,7 @@ def wordcloud(
         else:
             return f"rgb({int(np.random.rand()*255)}, {int(np.random.rand()*255)}, {int(np.random.rand()*255)})"
 
+    WordCloud = require("wordcloud", "text").WordCloud
     wc = WordCloud(
         width=1600,
         height=1200,
@@ -200,7 +202,7 @@ def wordcloud_interactive(
         positions.append(pt)
 
     # Color assignment using proper viridis
-    cmap = cm.get_cmap(colormap)
+    cmap = matplotlib.colormaps[colormap]
     colors = []
     for w, f in zip(words, freqs):
         color = None

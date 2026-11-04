@@ -1,7 +1,7 @@
 """
-pie.py — Sociopath-it Visualization Module
+pie.py: Sociopath-it Visualization Module
 ------------------------------------------
-Elegant semantic pie chart for categorical distributions.
+Semantic pie chart for categorical distributions.
 
 Features:
 - Automatic category collapsing and labeling

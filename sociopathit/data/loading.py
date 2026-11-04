@@ -25,7 +25,7 @@ def load_stata(filepath: Union[str, Path],
                lowercase_cols: bool = True,
                id_candidates: Optional[List[str]] = None) -> pd.DataFrame:
     """
-    Load Stata file with robust error handling and preprocessing.
+    Load a Stata file, with error handling and preprocessing.
 
     Parameters
     ----------
@@ -191,9 +191,9 @@ def load_all_surveys(data_dir: Union[str, Path],
                 warnings.warn(f"Failed to load {filepath.name}: {e}")
 
     # Summary
-    print(f"✓ Successfully loaded {len(surveys)} surveys")
+    print(f"Loaded {len(surveys)} surveys")
     if errors:
-        print(f"⚠ Failed to load {len(errors)} files")
+        print(f"Failed to load {len(errors)} files")
 
     return surveys
 

@@ -1,5 +1,5 @@
 """
-model_io.py  Sociopath-it Model Save/Load Module
+model_io.py: Sociopath-it Model Save/Load Module
 ---------------------------------------------------
 Save and load regression model results for reproducibility and cross-platform compatibility.
 
@@ -23,12 +23,11 @@ from typing import Dict, List, Optional, Union
 from pathlib import Path
 import warnings
 
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # SAVE FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def save_model(
     model,
@@ -178,9 +177,9 @@ def save_models(
                 print(f"Model '{name}' saved to: {csv_path}")
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # LOAD FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def load_model(filepath: str) -> Dict:
     """
@@ -255,9 +254,9 @@ def load_models(filepath: str) -> Dict:
         raise ValueError("load_models only supports JSON format")
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # R COMPATIBILITY
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def export_for_r(
     model,
@@ -363,9 +362,9 @@ def import_from_r(coef_filepath: str, stats_filepath: Optional[str] = None) -> D
     return result
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # HELPER FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def _json_serializer(obj):
     """Handle non-serializable objects for JSON."""

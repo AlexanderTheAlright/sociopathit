@@ -1,17 +1,18 @@
 """
-style.py — The Sociopath-it World of Data Visualization 🎨
+style.py: the Sociopath-it style engine
 -----------------------------------------------------------
 Core style engine for Sociopath-it plots.
 
-Implements multiple thematic styles reflecting interpretive mood:
-- 'fiery'     → intense reds, oranges, purples (high emotional contrast)
+Style modes:
+- 'fiery'     → reds, oranges and purples (high contrast)
 - 'viridis'   → balanced, perceptually uniform viridis-based default
-- 'sentiment' → green-positive, red-negative moral economy tone
+- 'sentiment' → green for positive, red for negative
 - 'plainjane' → light red/blue academic contrast
-- 'reviewer3' → grayscale, journal-safe, publishable
+- 'reviewer3' → black, white and greys for print journals
 """
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.patches import Rectangle
@@ -24,94 +25,198 @@ from matplotlib.lines import Line2D
 AVAILABLE_STYLES = ["fiery", "viridis", "sentiment", "plainjane", "reviewer3"]
 ACTIVE_STYLE = "viridis"
 
+# House style (craft/portfolio/style.md). B&W publication figures use
+# 'reviewer3'; colour figures use 'viridis' (the default).
+HOUSE_RCPARAMS = {
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['DejaVu Sans', 'Arial', 'Helvetica'],
+    'font.size': 10,
+    'axes.titlesize': 16,
+    'axes.titleweight': 'bold',
+    'axes.labelsize': 11,
+    'axes.labelweight': 'bold',
+    'xtick.labelsize': 10,
+    'ytick.labelsize': 10,
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'axes.edgecolor': '#000000',
+    'axes.linewidth': 1.0,
+    'axes.grid': False,          # no gridlines by default; add only when requested
+    'grid.color': '#E0E0E0',
+    'grid.linewidth': 0.5,
+    'grid.alpha': 0.3,
+    'figure.figsize': (10, 6),
+    'figure.dpi': 300,
+    'figure.facecolor': 'white',
+    'axes.facecolor': 'white',
+    'legend.frameon': True,
+    'legend.framealpha': 0.95,
+    'legend.fancybox': False,
+    'legend.edgecolor': '#CCCCCC',
+    'legend.fontsize': 9,
+    'lines.linewidth': 2.5,
+    'lines.markersize': 7,
+    'lines.markeredgewidth': 1.5,
+    'savefig.dpi': 300,
+    'savefig.bbox': 'tight',
+    'savefig.pad_inches': 0.1,
+}
+
+# B&W (reviewer3): black first; 2 groups = black + white with black edge
+# (never gray); 3+ groups add grays, which carry hatching.
+BW_PALETTE = ['#000000', '#FFFFFF', '#888888', '#CCCCCC']
+BW_TWO_GROUP = ['#000000', '#FFFFFF']
+BW_HATCHES = ['', '', '//', '..', 'xx', '\\\\', '++', 'oo']
+BW_COLORS = {
+    'negative': '#000000',
+    'positive': '#FFFFFF',
+    'neutral': '#888888',
+    'highlight': '#000000',
+    'threshold': '#000000',
+}
+BW_CMAP = 'Greys'
+
+VIRIDIS_PALETTE = ['#440154', '#31688e', '#7ad151', '#fde724']
+VIRIDIS_COLORS = {
+    'negative': '#d62728',
+    'positive': '#2ca02c',
+    'primary': '#440154',
+    'secondary': '#fde724',
+}
+VIRIDIS_CMAP = 'viridis'
+
+STYLES = {
+    'sentiment': {
+        'discrete': ['#2ca02c', '#7f7f7f', '#d62728', '#8b0000'],
+        'cmap': 'RdYlGn',
+        'colors': {'positive': '#2ca02c', 'neutral': '#7f7f7f', 'negative': '#d62728'},
+    },
+    'fiery': {
+        'discrete': ['#3b0f70', '#8c2d8e', '#e65d2f', '#fcffa4'],
+        'cmap': 'Reds',
+        'colors': {'positive': '#ff7f0e', 'neutral': '#8c564b', 'negative': '#d62728'},
+    },
+    'plainjane': {
+        'discrete': ['#1f4e79', '#5b9bd5', '#d6dce4', '#ffffff'],
+        'cmap': 'RdBu_r',
+        'colors': {'positive': '#1f77b4', 'neutral': '#7f7f7f', 'negative': '#d62728'},
+    },
+}
+
+DISCRETE_PALETTES = {
+    'reviewer3': BW_PALETTE,
+    'viridis': VIRIDIS_PALETTE,
+    'sentiment': STYLES['sentiment']['discrete'],
+    'fiery': STYLES['fiery']['discrete'],
+    'plainjane': STYLES['plainjane']['discrete'],
+}
+
+DATA_ELEMENT_KWARGS = {'edgecolor': 'black', 'linewidth': 1.0}
+
+
 def set_style(mode: str = "viridis"):
     """
-    Apply a Sociopath-it visual style theme.
+    Apply the house rcParams and record the active Sociopath-it style.
 
     Parameters
     ----------
     mode : str
         One of {'fiery','viridis','sentiment','plainjane','reviewer3'}.
     """
-    mode = mode.lower()
+    mode = (mode or "viridis").lower()
     if mode not in AVAILABLE_STYLES:
         raise ValueError(f"Invalid mode '{mode}'. Choose from {AVAILABLE_STYLES}.")
 
     plt.style.use("default")
-    plt.rcParams.update({
-        # Canvas and spines
-        "figure.facecolor": "#FFFFFF",
-        "axes.facecolor": "#FFFFFF",
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.edgecolor": "#000000",
-        "axes.linewidth": 1.0,
-
-        # Default figure size (smaller) and DPI (higher)
-        "figure.figsize": (8.0, 5.0),
-        "figure.dpi": 300,
-
-        # Grid - improved defaults
-        "axes.grid": True,
-        "axes.grid.axis": "y",
-        "grid.color": "#E0E0E0",
-        "grid.linestyle": "-",
-        "grid.linewidth": 0.75,
-        "grid.alpha": 0.5,
-        "axes.axisbelow": True,
-
-        # Typography - larger, clearer fonts
-        "font.family": "sans-serif",
-        "font.sans-serif": ["DejaVu Sans", "Arial", "Helvetica"],
-        "axes.titlesize": 16,
-        "axes.titleweight": "bold",
-        "axes.titlecolor": "#000000",
-        "axes.labelsize": 11,
-        "axes.labelweight": "bold",
-        "axes.labelcolor": "#000000",
-
-        # Tick parameters
-        "xtick.color": "#000000",
-        "ytick.color": "#000000",
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
-        "xtick.major.size": 5,
-        "ytick.major.size": 5,
-        "xtick.major.width": 1.0,
-        "ytick.major.width": 1.0,
-        "xtick.direction": "out",
-        "ytick.direction": "out",
-
-        # Legend - larger and clearer
-        "legend.frameon": True,
-        "legend.framealpha": 0.95,
-        "legend.fancybox": False,
-        "legend.edgecolor": "#CCCCCC",
-        "legend.facecolor": "white",
-        "legend.fontsize": 9,
-        "legend.title_fontsize": 10,
-        "legend.borderpad": 0.6,
-        "legend.labelspacing": 0.6,
-        "legend.handlelength": 2.0,
-        "legend.handleheight": 0.7,
-        "legend.handletextpad": 0.8,
-        "legend.borderaxespad": 0.5,
-        "legend.columnspacing": 2.0,
-
-        # Lines and markers
-        "lines.linewidth": 2.5,
-        "lines.markersize": 7,
-        "lines.markeredgewidth": 1.5,
-
-        # Export settings
-        "savefig.dpi": 300,
-        "savefig.bbox": "tight",
-        "savefig.pad_inches": 0.1,
-        "savefig.facecolor": "white",
-    })
+    mpl.rcParams['svg.fonttype'] = 'none'  # editable text in SVG (Typst)
+    plt.rcParams.update(HOUSE_RCPARAMS)
+    plt.rcParams['savefig.facecolor'] = 'white'
 
     global ACTIVE_STYLE
     ACTIVE_STYLE = mode
+
+
+def get_palette(items, mode='viridis'):
+    """Discrete palette for 1-4 items, colormap sampling for 5+."""
+    mode = (mode or ACTIVE_STYLE).lower()
+    items = list(items)
+    if len(items) <= 4:
+        colors = DISCRETE_PALETTES.get(mode, VIRIDIS_PALETTE)
+        return {item: colors[i] for i, item in enumerate(items)}
+    cmap_name = {'reviewer3': BW_CMAP, 'viridis': VIRIDIS_CMAP}.get(
+        mode, STYLES.get(mode, {}).get('cmap', VIRIDIS_CMAP))
+    cmap = mpl.colormaps[cmap_name]
+    return {item: cmap(0.3 + 0.7 * i / (len(items) - 1))
+            for i, item in enumerate(items)}
+
+
+def get_hatches(n, mode=None):
+    """
+    Hatch patterns for n filled groups. Only reviewer3 hatches, and only the
+    gray groups of a 3+ group figure; black and white stay plain.
+    """
+    mode = (mode or ACTIVE_STYLE).lower()
+    if mode != 'reviewer3' or n < 3:
+        return [''] * n
+    return [BW_HATCHES[i % len(BW_HATCHES)] if i >= 2 else '' for i in range(n)]
+
+
+def smart_format(value, is_percentage=False):
+    """Format numbers: integers no decimals, auto-detect 1 vs 2, thousands sep."""
+    if value != value:  # NaN check
+        return ''
+    if float(value) == int(value):
+        formatted = f'{int(value):,}'
+    elif round(value, 1) == round(value, 2):
+        formatted = f'{value:,.1f}'
+    else:
+        formatted = f'{value:,.2f}'
+    return f'{formatted}%' if is_percentage else formatted
+
+
+def save_figure(fig, path, dpi=300):
+    """
+    Save `fig` as SVG and PNG side by side (path with or without extension).
+    Returns the two paths written.
+    """
+    from pathlib import Path
+    path = Path(path)
+    stem = path.with_suffix('') if path.suffix.lower() in ('.svg', '.png', '.pdf', '.jpg', '.jpeg') else path
+    svg = stem.with_suffix('.svg')
+    png = stem.with_suffix('.png')
+    fig.savefig(svg, bbox_inches='tight', facecolor='white')
+    fig.savefig(png, bbox_inches='tight', facecolor='white', dpi=dpi)
+    return svg, png
+
+
+def zero_baseline(ax, values, axis="y"):
+    """Start the value axis at 0 when every value is non-negative."""
+    vals = np.asarray(pd_to_numeric(values), dtype=float)
+    vals = vals[np.isfinite(vals)]
+    if vals.size and vals.min() >= 0:
+        if axis == "y":
+            ax.set_ylim(bottom=0)
+        else:
+            ax.set_xlim(left=0)
+    return ax
+
+
+def pd_to_numeric(values):
+    """Coerce a sequence to floats (non-numeric entries become NaN)."""
+    out = []
+    for v in np.ravel(np.asarray(values, dtype=object)):
+        try:
+            out.append(float(v))
+        except (TypeError, ValueError):
+            out.append(np.nan)
+    return out
+
+
+def style_colorbar(cbar, label=None):
+    """House colorbar label: rotation=270, labelpad=15, bold."""
+    if label is not None:
+        cbar.set_label(label, rotation=270, labelpad=15, weight='bold')
+    return cbar
 
 
 def format_tick_labels(ax, rotation_x=0, bold=True):
@@ -166,71 +271,6 @@ def generate_semantic_palette(groups: dict, mode: str = None):
     style = (mode or globals().get("ACTIVE_STYLE", "viridis")).lower()
     palette = {}
 
-    # Define explicit high-contrast color sets for small numbers of items
-    # Format: {style: {n_items: [color1, color2, ...]}}
-    DISCRETE_PALETTES = {
-        "viridis": {
-            1: [(0.127568, 0.566949, 0.550556, 1.0)],  # Teal middle
-            2: [(0.267004, 0.004874, 0.329415, 1.0),   # Dark purple
-                (0.993248, 0.906157, 0.143936, 1.0)],  # Bright yellow
-            3: [(0.267004, 0.004874, 0.329415, 1.0),   # Dark purple
-                (0.127568, 0.566949, 0.550556, 1.0),   # Teal
-                (0.993248, 0.906157, 0.143936, 1.0)],  # Bright yellow
-            4: [(0.267004, 0.004874, 0.329415, 1.0),   # Dark purple
-                (0.153364, 0.497000, 0.557724, 1.0),   # Blue-teal
-                (0.468667, 0.856531, 0.434154, 1.0),   # Yellow-green
-                (0.993248, 0.906157, 0.143936, 1.0)],  # Bright yellow
-        },
-        "sentiment": {
-            1: [(0.5, 0.5, 0.5, 1.0)],                 # Gray
-            2: [(0.133, 0.545, 0.133, 1.0),            # Forest green
-                (0.839, 0.153, 0.157, 1.0)],           # Crimson red
-            3: [(0.133, 0.545, 0.133, 1.0),            # Forest green
-                (0.5, 0.5, 0.5, 1.0),                  # Gray
-                (0.839, 0.153, 0.157, 1.0)],           # Crimson red
-            4: [(0.000, 0.392, 0.000, 1.0),            # Dark green
-                (0.133, 0.545, 0.133, 1.0),            # Forest green
-                (0.839, 0.153, 0.157, 1.0),            # Crimson red
-                (0.545, 0.000, 0.000, 1.0)],           # Dark red
-        },
-        "fiery": {
-            1: [(0.8, 0.4, 0.0, 1.0)],                 # Orange middle
-            2: [(0.050383, 0.029803, 0.527975, 1.0),  # Dark purple/blue
-                (0.940015, 0.975158, 0.131326, 1.0)], # Bright yellow
-            3: [(0.050383, 0.029803, 0.527975, 1.0),  # Dark purple/blue
-                (0.796338, 0.278826, 0.473089, 1.0),  # Pink/magenta
-                (0.940015, 0.975158, 0.131326, 1.0)], # Bright yellow
-            4: [(0.050383, 0.029803, 0.527975, 1.0),  # Dark purple/blue
-                (0.618896, 0.124865, 0.608374, 1.0),  # Purple
-                (0.905384, 0.500563, 0.173636, 1.0),  # Orange
-                (0.940015, 0.975158, 0.131326, 1.0)], # Bright yellow
-        },
-        "plainjane": {
-            1: [(0.5, 0.5, 0.5, 1.0)],                 # Gray
-            2: [(0.122, 0.467, 0.706, 1.0),            # Blue
-                (1.0, 1.0, 1.0, 1.0)],                 # White
-            3: [(0.122, 0.467, 0.706, 1.0),            # Blue
-                (0.5, 0.5, 0.5, 1.0),                  # Gray
-                (1.0, 1.0, 1.0, 1.0)],                 # White
-            4: [(0.031, 0.188, 0.420, 1.0),            # Dark blue
-                (0.122, 0.467, 0.706, 1.0),            # Light blue
-                (0.7, 0.7, 0.7, 1.0),                  # Light gray
-                (1.0, 1.0, 1.0, 1.0)],                 # White
-        },
-        "reviewer3": {
-            1: [(0.0, 0.0, 0.0, 1.0)],                 # Black
-            2: [(0.0, 0.0, 0.0, 1.0),                  # Pure black
-                (1.0, 1.0, 1.0, 1.0)],                 # Pure white
-            3: [(0.0, 0.0, 0.0, 1.0),                  # Black
-                (0.5, 0.5, 0.5, 1.0),                  # Medium gray
-                (1.0, 1.0, 1.0, 1.0)],                 # White
-            4: [(0.0, 0.0, 0.0, 1.0),                  # Black
-                (0.33, 0.33, 0.33, 1.0),               # Dark gray
-                (0.67, 0.67, 0.67, 1.0),               # Light gray
-                (1.0, 1.0, 1.0, 1.0)],                 # White
-        },
-    }
-
     # Setup colormaps for 5+ items (legacy behavior)
     if style == "fiery":
         cmaps = {"positive": cm.plasma, "neutral": cm.magma, "negative": cm.inferno}
@@ -243,7 +283,7 @@ def generate_semantic_palette(groups: dict, mode: str = None):
         ranges = {"positive": (0.2, 1.0), "neutral": (0.2, 0.8), "negative": (0.2, 1.0)}
     elif style == "reviewer3":
         cmaps = {"positive": cm.Greys, "neutral": cm.Greys, "negative": cm.Greys}
-        ranges = {"positive": (0.0, 1.0), "neutral": (0.0, 1.0), "negative": (0.0, 1.0)}
+        ranges = {"positive": (1.0, 0.3), "neutral": (1.0, 0.3), "negative": (1.0, 0.3)}
     else:  # viridis
         cmaps = {"positive": cm.viridis, "neutral": cm.viridis, "negative": cm.viridis}
         ranges = {"positive": (0.0, 1.0), "neutral": (0.0, 1.0), "negative": (0.0, 1.0)}
@@ -257,9 +297,9 @@ def generate_semantic_palette(groups: dict, mode: str = None):
 
         # For 1-4 items, use explicit discrete palette for maximum contrast
         if n_items <= 4:
-            colors = DISCRETE_PALETTES.get(style, DISCRETE_PALETTES["viridis"])[n_items]
+            colors = DISCRETE_PALETTES.get(style, VIRIDIS_PALETTE)[:n_items]
             for item, color in zip(items, colors):
-                palette[item] = color
+                palette[item] = mpl.colors.to_rgba(color)
         else:
             # For 5+ items, use colormap sampling
             g = group.lower()
@@ -328,47 +368,75 @@ def get_continuous_cmap(mode: str = None):
 # III. TITLING SYSTEM
 # ══════════════════════════════════════════════════════════════════════════════
 
-def apply_titles(fig, title=None, subtitle=None, n=None):
+def _main_axes(fig):
+    """Return the figure's plotting axes, leaving out colorbar axes."""
+    return [a for a in fig.axes if a.get_label() != "<colorbar>" and a.get_visible()]
+
+
+def apply_titles(fig, title=None, subtitle=None, n=None, ax=None):
     """
-    Sociopath-it title logic:
-    - If subtitle exists: title and subtitle at center-left
-    - If no subtitle: centered title
-    - Optional n count in bottom right
+    Place the title (and optional subtitle) centred over the plotting axes.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+    title, subtitle : str, optional
+        Title in bold; subtitle in grey on the line below it.
+    n : int, optional
+        Sample size, printed as "(n = ...)" in the bottom right corner.
+    ax : matplotlib.axes.Axes, optional
+        Axes to centre the title over. If omitted and the figure has a single
+        plotting axes (colorbars are ignored) without its own title, that axes
+        is used. Figures with several panels get a figure title instead.
     """
     if title is None:
         return
 
-    if subtitle:
-        # Center-left placement for title + subtitle
-        fig.text(
-            0.02,
-            0.97,
+    if ax is None:
+        main = _main_axes(fig)
+        if len(main) == 1 and not main[0].get_title():
+            ax = main[0]
+
+    if ax is not None:
+        ax.set_title(
             f"{title}",
             fontsize=15,
             weight="bold",
             color="black",
-            ha="left",
-            va="center",
+            loc="center",
+            pad=30 if subtitle else 12,
         )
-        fig.text(
-            0.02,
-            0.94,
-            f"{subtitle}",
-            fontsize=11,
-            color="grey",
-            ha="left",
-            va="center",
-        )
+        if subtitle:
+            ax.annotate(
+                f"{subtitle}",
+                xy=(0.5, 1.0),
+                xycoords="axes fraction",
+                xytext=(0, 10),
+                textcoords="offset points",
+                fontsize=11,
+                color="grey",
+                ha="center",
+                va="bottom",
+            )
     else:
-        # Centered title when no subtitle
         fig.suptitle(
             f"{title}",
             fontsize=15,
             weight="bold",
             color="black",
-            y=0.96,
+            y=0.98 if subtitle else 0.96,
             ha="center",
         )
+        if subtitle:
+            fig.text(
+                0.5,
+                0.93,
+                f"{subtitle}",
+                fontsize=11,
+                color="grey",
+                ha="center",
+                va="center",
+            )
 
     if n is not None:
         fig.text(
@@ -388,12 +456,75 @@ def apply_titles(fig, title=None, subtitle=None, n=None):
 
 def get_data_element_kwargs():
     """Return default kwargs for Sociopath-it data elements."""
-    return {"edgecolor": "black", "linewidth": 1.0}
+    return dict(DATA_ELEMENT_KWARGS)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # V. LEGEND UTILITIES
 # ══════════════════════════════════════════════════════════════════════════════
+
+def legend_below(ax, handles=None, labels=None, title=None, ncol=None,
+                 fontsize=11, gap=8, max_cols=4):
+    """
+    Draw one legend centred below the axes, under the tick labels and x-axis label.
+
+    Call it after tick labels are final (rotation included) and before
+    ``fig.tight_layout``; tight_layout then leaves room for the legend.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+    handles, labels : list, optional
+        Legend entries. Taken from ``ax.get_legend_handles_labels()`` if omitted.
+    title : str, optional
+        Legend title. None by default.
+    ncol : int, optional
+        Number of columns; defaults to ``min(len(labels), max_cols)``.
+    fontsize : int, default 11
+    gap : float, default 8
+        Space in points between the x-axis label and the legend.
+    max_cols : int, default 4
+
+    Returns
+    -------
+    matplotlib.legend.Legend or None
+    """
+    from matplotlib.transforms import offset_copy
+
+    if handles is None or labels is None:
+        handles, labels = ax.get_legend_handles_labels()
+    if not handles:
+        return None
+    old = ax.get_legend()
+    if old is not None:
+        old.remove()
+
+    fig = ax.figure
+    renderer = fig._get_renderer()
+    axes_bottom = ax.get_window_extent(renderer).y0
+    tight_bottom = ax.get_tightbbox(renderer).y0
+    drop = max(axes_bottom - tight_bottom, 0) * 72.0 / fig.dpi + gap
+    anchor = offset_copy(ax.transAxes, fig=fig, y=-drop, units="points")
+
+    n_items = len(labels)
+    legend = ax.legend(
+        handles,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.0),
+        bbox_transform=anchor,
+        ncol=ncol or min(n_items, max_cols),
+        frameon=False,
+        fontsize=fontsize,
+        title=title,
+        title_fontsize=fontsize + 1,
+        handlelength=1.6,
+        columnspacing=1.6,
+    )
+    if title:
+        legend.get_title().set_fontweight("bold")
+    return legend
+
 
 def draw_legend_group(ax, fig, title, var_list, palette,
                       start_x, start_y, line_height=0.04, spacing=0.04):

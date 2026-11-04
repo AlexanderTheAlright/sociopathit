@@ -1,5 +1,5 @@
 """
-residuals.py  Sociopath-it Residuals Diagnostic Plots
+residuals.py: Sociopath-it Residuals Diagnostic Plots
 -------------------------------------------------------
 Diagnostic plots for regression model assumptions.
 
@@ -18,10 +18,9 @@ from typing import Optional
 import warnings
 from scipy import stats
 
-warnings.filterwarnings('ignore')
 
 try:
-    from ..utils.style import apply_titles, COLORS_DICT, get_color, format_tick_labels
+    from ..utils.style import apply_titles, COLORS_DICT, get_color, format_tick_labels, legend_below
 except ImportError:
     def apply_titles(*args, **kwargs):
         pass
@@ -147,7 +146,8 @@ def residuals(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -172,7 +172,6 @@ def _plot_residuals_fitted(ax, fitted, resid, color, style_mode):
     ax.set_xlabel('Fitted Values', fontsize=11, weight='bold', color='black')
     ax.set_ylabel('Residuals', fontsize=11, weight='bold', color='black')
     ax.set_title('Residuals vs Fitted', fontsize=12, weight='bold', pad=10)
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
 
@@ -192,7 +191,6 @@ def _plot_qq(ax, standardized_resid, color, style_mode):
     ax.set_xlabel('Theoretical Quantiles', fontsize=11, weight='bold', color='black')
     ax.set_ylabel('Standardized Residuals', fontsize=11, weight='bold', color='black')
     ax.set_title('Normal Q-Q Plot', fontsize=12, weight='bold', pad=10)
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
 
@@ -215,7 +213,6 @@ def _plot_scale_location(ax, fitted, standardized_resid, color, style_mode):
     ax.set_xlabel('Fitted Values', fontsize=11, weight='bold', color='black')
     ax.set_ylabel('√|Standardized Residuals|', fontsize=11, weight='bold', color='black')
     ax.set_title('Scale-Location Plot', fontsize=12, weight='bold', pad=10)
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
 
@@ -254,7 +251,6 @@ def _plot_leverage(ax, results, standardized_resid, color, style_mode):
     ax.set_xlabel('Leverage', fontsize=11, weight='bold', color='black')
     ax.set_ylabel('Standardized Residuals', fontsize=11, weight='bold', color='black')
     ax.set_title('Residuals vs Leverage', fontsize=12, weight='bold', pad=10)
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
 
@@ -322,31 +318,20 @@ def residuals_histogram(
     ax.set_xlabel('Standardized Residuals', fontsize=12, weight='bold', color='black')
     ax.set_ylabel('Density', fontsize=12, weight='bold', color='black')
 
-    # Legend
-    legend = ax.legend(
-        bbox_to_anchor=(1.02, 1.0),
-        loc='upper left',
-        frameon=True,
-        facecolor='white',
-        edgecolor='grey',
-        fontsize=10,
-    )
-    legend.get_frame().set_linewidth(1.5)
-    legend.get_frame().set_alpha(0.95)
-
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
     # Title
     if title or subtitle:
         apply_titles(fig, title=title, subtitle=subtitle)
 
-    # Layout
-    fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
+    # One legend centred below the axes
+    legend_below(ax)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 

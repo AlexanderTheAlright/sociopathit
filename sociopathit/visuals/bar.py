@@ -1,5 +1,5 @@
 """
-bar.py — Sociopath-it Visualization Module 🧱
+bar.py: Sociopath-it Visualization Module
 --------------------------------------------
 Flexible categorical comparisons:
 - vertical, horizontal, or stacked bars
@@ -9,6 +9,7 @@ Flexible categorical comparisons:
 - Plotly interactive counterpart
 """
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
@@ -22,6 +23,10 @@ from ..utils.style import (
     apply_titles,
     get_data_element_kwargs,
     format_tick_labels,
+    get_hatches,
+    smart_format,
+    zero_baseline,
+    legend_below,
 )
 
 
@@ -46,6 +51,7 @@ def bar(
     sort="none",                   # 'none', 'asc', or 'desc'
     group_spacing=None,            # e.g. [(0,2), (3,5)] or int for split index
     figsize=(10, 6),
+    legend_title=None,
 ):
     """
     Sociopath-it bar plot with multiple orientations and optional features.
@@ -86,6 +92,10 @@ def bar(
         Sort bars: 'none', 'asc', or 'desc'
     group_spacing : int, list, or tuple, optional
         Add gaps between bar groups
+    figsize : tuple, default (10, 6)
+        Figure size in inches.
+    legend_title : str, optional
+        Title for the legend of stacked and grouped bars. None by default.
 
     Returns
     -------
@@ -158,22 +168,25 @@ def bar(
 
     colors = [
         "white" if v == "" else (
-            highlight_color if (highlight and v == highlight) else palette.get(v, cm.get_cmap("viridis")(0.6))
+            highlight_color if (highlight and v == highlight) else palette.get(v, matplotlib.colormaps["viridis"](0.6))
         )
         for v in df[x]
     ]
+    _cats = [v for v in df[x].dropna().unique().tolist() if v != ""]
+    _cat_hatch = dict(zip(_cats, get_hatches(len(_cats), style_mode)))
+    hatches = [_cat_hatch.get(v, "") for v in df[x]]
     kwargs = get_data_element_kwargs()
 
     # ─────────────────────────────────────────────
     # Main plotting logic
     # ─────────────────────────────────────────────
     if orientation == "horizontal":
-        ax.barh(df[x], df[y], color=colors, **kwargs)
+        ax.barh(df[x], df[y], color=colors, hatch=hatches, **kwargs)
         ax.set_xlabel(y.title(), fontsize=12, weight="bold", color="black")
         ax.set_ylabel("")
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
-                ax.text(val + (df[y].max() * 0.015), i, f"{val:,.2f}", va="center", fontsize=9, color="black", weight="bold",
+                ax.text(val + (df[y].max() * 0.015), i, smart_format(val), va="center", fontsize=9, color="black", weight="bold",
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
     elif orientation == "stacked":
@@ -197,23 +210,11 @@ def bar(
         stack_palette = generate_semantic_palette({"positive": cols}, mode=style_mode)
 
         bottom = np.zeros(len(df))
-        for c in cols:
+        stack_hatches = get_hatches(len(cols), style_mode)
+        for c, h in zip(cols, stack_hatches):
             vals = df[c].values
-            ax.bar(df[x], vals, bottom=bottom, label=c, color=stack_palette.get(c, cm.get_cmap("viridis")(0.6)), **kwargs)
+            ax.bar(df[x], vals, bottom=bottom, label=c, color=stack_palette.get(c, matplotlib.colormaps["viridis"](0.6)), hatch=h, **kwargs)
             bottom += vals
-        legend = ax.legend(
-            bbox_to_anchor=(1.02, 1.0),
-            loc="upper left",
-            frameon=True,
-            facecolor="white",
-            edgecolor="grey",
-            fontsize=12,
-            title="Categories",
-            title_fontsize=13,
-        )
-        legend.get_title().set_fontweight("bold")
-        legend.get_frame().set_linewidth(1.5)
-        legend.get_frame().set_alpha(0.95)
         ax.set_ylabel("Total", fontsize=12, weight="bold", color="black")
         ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
 
@@ -241,13 +242,15 @@ def bar(
         bar_width = 0.8 / n_groups  # Total width of 0.8 divided by number of groups
 
         # Plot grouped bars
+        group_hatches = get_hatches(n_groups, style_mode)
         for i, col in enumerate(cols):
             # Calculate offset for this group
             offset = (i - n_groups/2 + 0.5) * bar_width
             vals = df[col].values
             ax.bar(x_positions + offset, vals, bar_width,
                    label=col,
-                   color=group_palette.get(col, cm.get_cmap("viridis")(0.6)),
+                   color=group_palette.get(col, matplotlib.colormaps["viridis"](0.6)),
+                   hatch=group_hatches[i],
                    **kwargs)
 
         # Set x-axis labels
@@ -255,31 +258,18 @@ def bar(
         ax.set_xticklabels(df[x])
 
         # Legend
-        legend = ax.legend(
-            bbox_to_anchor=(1.02, 1.0),
-            loc="upper left",
-            frameon=True,
-            facecolor="white",
-            edgecolor="grey",
-            fontsize=12,
-            title="Groups",
-            title_fontsize=13,
-        )
-        legend.get_title().set_fontweight("bold")
-        legend.get_frame().set_linewidth(1.5)
-        legend.get_frame().set_alpha(0.95)
 
         ax.set_ylabel(y.title() if y else "Value", fontsize=12, weight="bold", color="black")
         ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
 
     else:  # vertical
-        ax.bar(df[x], df[y], color=colors, **kwargs)
+        ax.bar(df[x], df[y], color=colors, hatch=hatches, **kwargs)
         ax.set_xlabel(x.title(), fontsize=12, weight="bold", color="black")
         ax.set_ylabel(y.title(), fontsize=12, weight="bold", color="black")
 
         for i, val in enumerate(df[y]):
             if not np.isnan(val):
-                ax.text(i, val + (df[y].max() * 0.03), f"{val:,.2f}", ha="center", fontsize=9, color="black", weight="bold",
+                ax.text(i, val + (df[y].max() * 0.03), smart_format(val), ha="center", fontsize=9, color="black", weight="bold",
                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
         # ─────────────────────────────────────────────
@@ -349,42 +339,24 @@ def bar(
         # Calculate padding based on ACTUAL DATA range, not autoscaled limits
         data_range = data_max - data_min
 
-        if is_percentage:
-            # For percentage data: use data range for padding, then clamp to [0, 100]
-            padding = data_range * 0.20
-            new_min = max(0, data_min - padding)
-            new_max = min(100.0, data_max + padding)
-            # Ensure minimum window size for narrow ranges
-            if data_range < 20:  # Less than 20 percentage points
-                center = (data_min + data_max) / 2
-                new_min = max(0, center - 15)
-                new_max = min(100.0, center + 15)
+        # Value axis starts at 0 unless the data go negative
+        padding = data_range * 0.20 if data_range > 0 else abs(data_max) * 0.20 or 1.0
+        new_min = 0 if data_min >= 0 else data_min - padding
+        new_max = data_max + padding
+        if is_percentage and not is_proportion:
+            new_max = min(100.0, new_max) if data_max < 100.0 else data_max
         elif is_proportion:
-            # For proportion data: use data range for padding, then clamp to [0, 1]
-            padding = data_range * 0.20
-            new_min = max(0, data_min - padding)
-            new_max = min(1.0, data_max + padding)
-            if data_range < 0.2:
-                center = (data_min + data_max) / 2
-                new_min = max(0, center - 0.15)
-                new_max = min(1.0, center + 0.15)
-        else:
-            # For non-percentage data: calculate padding from data range
-            padding = data_range * 0.20
-            # For grouped/stacked bars, start at 0 if all data is positive
-            # (bars should naturally start at baseline unless there's negative data)
-            if data_min >= 0:
-                new_min = 0
-            else:
-                new_min = data_min - padding
-            new_max = data_max + padding
+            new_max = min(1.0, new_max) if data_max < 1.0 else data_max
+        if new_max <= new_min:
+            new_max = new_min + 1.0
 
         ax.set_ylim(new_min, new_max)
+    else:
+        zero_baseline(ax, df[y], axis="x")
 
     # ─────────────────────────────────────────────
     # Styling and finishing touches
     # ─────────────────────────────────────────────
-    ax.grid(axis="y" if orientation != "horizontal" else "x", linestyle=":", color="grey", linewidth=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     apply_titles(fig, title, subtitle, n=n)
@@ -403,11 +375,10 @@ def bar(
     # Format tick labels: bold and conditionally angled
     format_tick_labels(ax, rotation_x=rotation_angle)
 
-    # Adjust layout based on orientation (stacked and grouped have legend on right)
+    # Stacked and grouped bars get one legend centred below the axes
     if orientation in ["stacked", "grouped"]:
-        fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
-    else:
-        fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
+        legend_below(ax, title=legend_title)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -522,6 +493,8 @@ def bar_subplots(
         groups = {"positive": df[x].unique().tolist()}
         palette = generate_semantic_palette(groups, mode=style_mode)
 
+    _sub_cats = list(palette.keys())
+    _sub_hatch = dict(zip(_sub_cats, get_hatches(len(_sub_cats), style_mode)))
     kwargs = get_data_element_kwargs()
 
     # Create subplots
@@ -536,33 +509,31 @@ def bar_subplots(
             plot_df = df[[x, y_var]].copy()
 
             colors = [
-                highlight_color if (highlight and v == highlight) else palette.get(v, cm.get_cmap("viridis")(0.6))
+                highlight_color if (highlight and v == highlight) else palette.get(v, matplotlib.colormaps["viridis"](0.6))
                 for v in plot_df[x]
             ]
 
             if orientation == "horizontal":
-                ax.barh(plot_df[x], plot_df[y_var], color=colors, **kwargs)
+                ax.barh(plot_df[x], plot_df[y_var], color=colors, hatch=[_sub_hatch.get(v, "") for v in plot_df[x]], **kwargs)
                 ax.set_xlabel(y_var.replace("_", " ").title(), fontsize=11, weight="bold", color="black")
                 ax.set_ylabel("")
                 # Annotations
                 for i, val in enumerate(plot_df[y_var]):
                     if not np.isnan(val):
-                        ax.text(val + (plot_df[y_var].max() * 0.015), i, f"{val:,.2f}",
+                        ax.text(val + (plot_df[y_var].max() * 0.015), i, smart_format(val),
                                va="center", fontsize=9, color="black", weight="bold",
                                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
             else:
-                ax.bar(plot_df[x], plot_df[y_var], color=colors, **kwargs)
+                ax.bar(plot_df[x], plot_df[y_var], color=colors, hatch=[_sub_hatch.get(v, "") for v in plot_df[x]], **kwargs)
                 ax.set_ylabel(y_var.replace("_", " ").title(), fontsize=11, weight="bold", color="black")
                 ax.set_xlabel("")
                 # Annotations
                 for i, val in enumerate(plot_df[y_var]):
                     if not np.isnan(val):
-                        ax.text(i, val + (plot_df[y_var].max() * 0.03), f"{val:,.2f}",
+                        ax.text(i, val + (plot_df[y_var].max() * 0.03), smart_format(val),
                                ha="center", fontsize=9, color="black", weight="bold",
                                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
-            ax.grid(axis="y" if orientation != "horizontal" else "x",
-                   linestyle=":", color="grey", linewidth=0.7)
             ax.spines["top"].set_visible(False)
             ax.spines["right"].set_visible(False)
 
@@ -587,12 +558,12 @@ def bar_subplots(
                     subplot_title = str(row_val)
 
                 colors = [
-                    highlight_color if (highlight and v == highlight) else palette.get(v, cm.get_cmap("viridis")(0.6))
+                    highlight_color if (highlight and v == highlight) else palette.get(v, matplotlib.colormaps["viridis"](0.6))
                     for v in plot_df[x]
                 ]
 
                 if orientation == "horizontal":
-                    ax.barh(plot_df[x], plot_df[y], color=colors, **kwargs)
+                    ax.barh(plot_df[x], plot_df[y], color=colors, hatch=[_sub_hatch.get(v, "") for v in plot_df[x]], **kwargs)
                     if row_idx == n_rows - 1:
                         ax.set_xlabel(y.replace("_", " ").title(), fontsize=11, weight="bold", color="black")
                     else:
@@ -602,11 +573,11 @@ def bar_subplots(
                     # Annotations
                     for i, val in enumerate(plot_df[y]):
                         if not np.isnan(val):
-                            ax.text(val + (plot_df[y].max() * 0.015), i, f"{val:,.2f}",
+                            ax.text(val + (plot_df[y].max() * 0.015), i, smart_format(val),
                                    va="center", fontsize=9, color="black", weight="bold",
                                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
                 else:
-                    ax.bar(plot_df[x], plot_df[y], color=colors, **kwargs)
+                    ax.bar(plot_df[x], plot_df[y], color=colors, hatch=[_sub_hatch.get(v, "") for v in plot_df[x]], **kwargs)
                     if col_idx == 0:
                         ax.set_ylabel(y.replace("_", " ").title(), fontsize=11, weight="bold", color="black")
                     else:
@@ -616,12 +587,10 @@ def bar_subplots(
                     # Annotations
                     for i, val in enumerate(plot_df[y]):
                         if not np.isnan(val):
-                            ax.text(i, val + (plot_df[y].max() * 0.03), f"{val:,.2f}",
+                            ax.text(i, val + (plot_df[y].max() * 0.03), smart_format(val),
                                    ha="center", fontsize=9, color="black", weight="bold",
                                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
-                ax.grid(axis="y" if orientation != "horizontal" else "x",
-                       linestyle=":", color="grey", linewidth=0.7)
                 ax.spines["top"].set_visible(False)
                 ax.spines["right"].set_visible(False)
 
@@ -683,14 +652,14 @@ def bar_interactive(
 
     # --- Color logic ---
     if color_mode == "continuous":
-        cmap = cm.get_cmap("viridis")
+        cmap = matplotlib.colormaps["viridis"]
         norm_vals = (df[y] - df[y].min()) / (df[y].max() - df[y].min() + 1e-9)
         colors = [f"rgba({int(r*255)},{int(g*255)},{int(b*255)},{a:.2f})"
                   for r, g, b, a in cmap(norm_vals)]
     elif group_col and group_col in df.columns:
         groups = {"positive": df[group_col].unique().tolist()}
         palette = generate_semantic_palette(groups, mode=style_mode)
-        colors = [palette.get(v, cm.get_cmap("viridis")(0.6)) for v in df[group_col]]
+        colors = [palette.get(v, matplotlib.colormaps["viridis"](0.6)) for v in df[group_col]]
         # Convert to rgba
         colors = [f"rgba({int(c[0]*255)},{int(c[1]*255)},{int(c[2]*255)},{c[3]:.2f})"
                  if isinstance(c, tuple) else c for c in colors]
@@ -703,12 +672,12 @@ def bar_interactive(
                 if v == highlight:
                     colors.append(highlight_color)
                 else:
-                    c = palette.get(v, cm.get_cmap("viridis")(0.6))
+                    c = palette.get(v, matplotlib.colormaps["viridis"](0.6))
                     colors.append(f"rgba({int(c[0]*255)},{int(c[1]*255)},{int(c[2]*255)},{c[3]:.2f})")
         else:
             groups = {"positive": df[x].unique().tolist()}
             palette = generate_semantic_palette(groups, mode=style_mode)
-            colors = [palette.get(v, cm.get_cmap("viridis")(0.6)) for v in df[x]]
+            colors = [palette.get(v, matplotlib.colormaps["viridis"](0.6)) for v in df[x]]
             colors = [f"rgba({int(c[0]*255)},{int(c[1]*255)},{int(c[2]*255)},{c[3]:.2f})"
                      if isinstance(c, tuple) else c for c in colors]
 

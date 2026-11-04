@@ -1,5 +1,5 @@
 """
-heatmap.py — Sociopath-it Visualization Module
+heatmap.py: Sociopath-it Visualization Module
 ----------------------------------------------
 Matrix or correlation heatmap with full theme styling.
 
@@ -56,7 +56,7 @@ def heatmap(df, title=None, subtitle=None, cmap=None, annot=False, style_mode="v
 
     # Fix colorbar label orientation (rotate to face towards the bar, not away)
     cbar = hm.collections[0].colorbar
-    cbar.set_label("Correlation", rotation=270, labelpad=20, fontsize=11, weight='bold')
+    cbar.set_label("Correlation", rotation=270, labelpad=15, fontsize=11, weight='bold')
 
     # Add custom white-bordered annotations if requested
     if annot:
@@ -261,7 +261,7 @@ def heatmap_distribution(
 
     # Fix colorbar label orientation (rotate to face towards the bar, not away)
     cbar = hm.collections[0].colorbar
-    cbar.set_label(cbar_label, rotation=270, labelpad=20, fontsize=11, weight='bold')
+    cbar.set_label(cbar_label, rotation=270, labelpad=15, fontsize=11, weight='bold')
 
     # Add custom white-bordered annotations if requested
     if annot:

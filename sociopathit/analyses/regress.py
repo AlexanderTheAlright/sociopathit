@@ -1,5 +1,5 @@
 """
-regress.py  Sociopath-it Regression Module
+regress.py: Sociopath-it Regression Module
 -------------------------------------------
 Simplified regression interface with survey weighting support.
 
@@ -37,12 +37,11 @@ except ImportError:
     STATSMODELS_AVAILABLE = False
     warnings.warn("statsmodels not available. Install with: pip install statsmodels")
 
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # MAIN REGRESSION INTERFACE
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 class RegressionModel:
     """
@@ -302,9 +301,9 @@ class RegressionModel:
         return vif_data
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CONVENIENCE FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def ols(
     df: pd.DataFrame,
@@ -423,9 +422,9 @@ def poisson(
     return model
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # MODEL COMPARISON
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def compare_models(*models: RegressionModel) -> pd.DataFrame:
     """
@@ -467,9 +466,9 @@ def compare_models(*models: RegressionModel) -> pd.DataFrame:
     return df_compare
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # MARGINAL EFFECTS (EXPERIMENTAL)
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def marginal_effects(model: RegressionModel, at: Optional[dict] = None) -> pd.DataFrame:
     """
@@ -525,9 +524,9 @@ def marginal_effects(model: RegressionModel, at: Optional[dict] = None) -> pd.Da
         return pd.DataFrame()
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # MULTILEVEL MODELS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 class MultilevelModel:
     """
@@ -688,6 +687,8 @@ class MultilevelModel:
                     var_group = float(cov_re)
                 else:
                     var_group = float(cov_re[0, 0]) if cov_re.size > 0 else 0.0
+            elif isinstance(cov_re, pd.DataFrame):
+                var_group = float(cov_re.iloc[0, 0]) if cov_re.size > 0 else 0.0
             else:
                 var_group = float(cov_re)
 
@@ -831,9 +832,9 @@ def multilevel(
     return model
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # FORMULA INTERFACE (ALTERNATIVE)
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def regress(
     formula: str,

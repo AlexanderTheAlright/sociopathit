@@ -1,18 +1,19 @@
 """
-waterfall.py — Enhanced Sociopath-it Visualization Module
+waterfall.py: Sociopath-it Visualization Module
 ---------------------------------------------------------
-Polished waterfall charts with trend arrows and rich styling options.
+Waterfall charts with trend arrows and styling options.
 
 Features:
-- Smoothed trend line with arrow (like dashboard script)
+- Smoothed trend line with arrow
 - Percentage change labels
 - Common y-offset padding for aligned annotations
 - Color intensity mapping
-- Interactive Plotly version with full feature parity
+- Interactive Plotly version with the same features
 """
 
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from matplotlib import cm
@@ -40,7 +41,7 @@ def waterfall(
         dpi=150,
 ):
     """
-    Polished waterfall plot with trend arrow and percentage labels.
+    Waterfall plot with trend arrow and percentage labels.
 
     Parameters
     ----------
@@ -108,8 +109,8 @@ def waterfall(
     ax.set_facecolor("white")
 
     # Colormaps
-    pos_cmap = cm.get_cmap("Greens")
-    neg_cmap = cm.get_cmap("Blues_r")
+    pos_cmap = matplotlib.colormaps["Greens"]
+    neg_cmap = matplotlib.colormaps["Blues_r"]
 
     # Draw bars with percentage annotations
     cumulative = start_val
@@ -187,7 +188,6 @@ def waterfall(
                        fontsize=10, color='grey')
     ax.set_ylabel(y.replace("_", " ").title(),
                   fontsize=12, fontweight='bold', color='grey')
-    ax.grid(axis='y', color='grey', linestyle=':', linewidth=0.7, alpha=0.7, zorder=0)
 
     # Spine styling
     for spine in ['top', 'right', 'left', 'bottom']:
@@ -370,6 +370,6 @@ def waterfall_interactive(
         font=dict(family="Arial, sans-serif"),
     )
 
-    fig.update_xaxis(tickangle=-45)
+    fig.update_xaxes(tickangle=-45)
 
     return fig

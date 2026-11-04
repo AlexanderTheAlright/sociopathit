@@ -1,5 +1,5 @@
 """
-oddsratio.py  Sociopath-it Odds Ratio Plots
+oddsratio.py: Sociopath-it Odds Ratio Plots
 ---------------------------------------------
 Forest plots for logistic regression odds ratios.
 
@@ -8,19 +8,17 @@ Features:
 - Odds ratios and log odds
 - Reference line at OR=1
 - Multiple model comparison
-- Publication-ready formatting
+- House-style formatting
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from typing import Optional, List, Union
-import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
-    from ..utils.style import apply_titles, COLORS_DICT, format_tick_labels
+    from ..utils.style import apply_titles, COLORS_DICT, format_tick_labels, legend_below
 except ImportError:
     def apply_titles(*args, **kwargs):
         pass
@@ -173,7 +171,6 @@ def oddsratio(
     ax.set_xlabel(xlabel, fontsize=12, weight='bold', color='black')
 
     # Grid
-    ax.grid(True, alpha=0.3, axis='x', linestyle='--', linewidth=0.5)
     ax.set_axisbelow(True)
 
     # Log scale if not already in log
@@ -196,7 +193,8 @@ def oddsratio(
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -341,20 +339,7 @@ def oddsratio_comparison(
         xlabel = 'Log Odds' if log_scale else 'Odds Ratio'
     ax.set_xlabel(xlabel, fontsize=12, weight='bold', color='black')
 
-    # Legend
-    legend = ax.legend(
-        bbox_to_anchor=(1.02, 1.0),
-        loc='upper left',
-        frameon=True,
-        facecolor='white',
-        edgecolor='grey',
-        fontsize=10,
-    )
-    legend.get_frame().set_linewidth(1.5)
-    legend.get_frame().set_alpha(0.95)
-
     # Grid
-    ax.grid(True, alpha=0.3, axis='x', linestyle='--', linewidth=0.5)
     ax.set_axisbelow(True)
 
     # Log scale if not already
@@ -365,11 +350,13 @@ def oddsratio_comparison(
     if title or subtitle:
         apply_titles(fig, title=title, subtitle=subtitle)
 
-    # Layout
-    fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
+    # One legend centred below the axes
+    legend_below(ax)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 

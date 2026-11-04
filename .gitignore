@@ -36,3 +36,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+# Local-only
+archive/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store
+/*.png
+.pytest_cache/

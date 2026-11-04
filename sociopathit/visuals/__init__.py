@@ -6,6 +6,7 @@ This module provides visualization functions for sociological data analysis.
 """
 
 # Import all visualization modules
+from . import apc
 from . import bar
 from . import boxplot
 from . import cluster
@@ -36,6 +37,7 @@ from . import wordcloud
 from .density import ryder, ryder_interactive
 
 __all__ = [
+    'apc',
     'bar',
     'boxplot',
     'cluster',

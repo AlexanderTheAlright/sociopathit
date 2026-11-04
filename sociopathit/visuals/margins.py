@@ -1,5 +1,5 @@
 """
-margins.py  Sociopath-it Marginal Effects Plots
+margins.py: Sociopath-it Marginal Effects Plots
 -------------------------------------------------
 Visualize predicted values and marginal effects from regression models.
 
@@ -17,10 +17,9 @@ import pandas as pd
 from typing import Optional, List, Union
 import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
-    from ..utils.style import apply_titles, COLORS_DICT, format_tick_labels
+    from ..utils.style import apply_titles, COLORS_DICT, format_tick_labels, legend_below
 except ImportError:
     def apply_titles(*args, **kwargs):
         pass
@@ -199,31 +198,20 @@ def margins(
     ax.set_xlabel(xlabel, fontsize=12, weight='bold', color='black')
     ax.set_ylabel(ylabel, fontsize=12, weight='bold', color='black')
 
-    # Legend
-    legend = ax.legend(
-        bbox_to_anchor=(1.02, 1.0),
-        loc='upper left',
-        frameon=True,
-        facecolor='white',
-        edgecolor='grey',
-        fontsize=10,
-    )
-    legend.get_frame().set_linewidth(1.5)
-    legend.get_frame().set_alpha(0.95)
-
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
     ax.set_axisbelow(True)
 
     # Title
     if title or subtitle:
         apply_titles(fig, title=title, subtitle=subtitle)
 
-    # Layout
-    fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
+    # One legend centred below the axes
+    legend_below(ax)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -381,34 +369,20 @@ def margins_comparison(
     ax.set_xlabel(xlabel, fontsize=12, weight='bold', color='black')
     ax.set_ylabel(ylabel, fontsize=12, weight='bold', color='black')
 
-    # Legend
-    legend = ax.legend(
-        bbox_to_anchor=(1.02, 1.0),
-        loc='upper left',
-        frameon=True,
-        facecolor='white',
-        edgecolor='grey',
-        fontsize=10,
-        title=by.replace('_', ' ').title(),
-        title_fontsize=11,
-    )
-    legend.get_title().set_fontweight('bold')
-    legend.get_frame().set_linewidth(1.5)
-    legend.get_frame().set_alpha(0.95)
-
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
     ax.set_axisbelow(True)
 
     # Title
     if title or subtitle:
         apply_titles(fig, title=title, subtitle=subtitle)
 
-    # Layout
-    fig.tight_layout(rect=(0, 0, 0.85, 0.9 if subtitle else 0.94))
+    # One legend centred below the axes
+    legend_below(ax)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 

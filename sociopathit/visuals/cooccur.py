@@ -1,9 +1,9 @@
 """
-cooccur.py — Sociopath-it Co-occurrence Network Visualization 🌐
+cooccur.py: Sociopath-it Co-occurrence Network Visualization
 ---------------------------------------------------------------
-Elegant visualization of textual co-occurrences as static or interactive networks.
+Text co-occurrences drawn as static or interactive networks.
 
-Upgrades:
+Features:
 - Centrality-based node shading (viridis)
 - White-backed, offset labels (no overlap)
 - Compact title/subtitle handling
@@ -13,7 +13,7 @@ Upgrades:
 import ast
 import numpy as np
 import pandas as pd
-import networkx as nx
+import matplotlib
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.subplots as sp
@@ -23,6 +23,7 @@ from matplotlib.colors import Normalize
 from matplotlib import cm
 
 from ..utils.style import set_style, apply_titles, format_tick_labels
+from ..utils.optional import require
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -42,6 +43,7 @@ def _parse_terms(x):
 
 def _compute_centrality(G):
     """Compute normalized betweenness centrality as shading metric."""
+    nx = require("networkx", "network")
     return nx.betweenness_centrality(G, weight="weight", normalized=True)
 
 
@@ -54,7 +56,7 @@ def cooccur(
     top_n=10,
     exclude=None,
     max_neighbors=10,
-    style="reviewer3",
+    style="viridis",
     figsize=(10, 7),
     density_mode=False,
 ):
@@ -75,10 +77,11 @@ def cooccur(
         for u, v in combinations(sorted(set(terms)), 2):
             edge_weights[(u, v)] += 1
     if not edge_weights:
-        print("⚠️ No valid co-occurrences found.")
+        print("No valid co-occurrences found.")
         return None
 
     # Build global co-occurrence network to compute centralities
+    nx = require("networkx", "network")
     G_global = nx.Graph()
     for (u, v), w in edge_weights.items():
         G_global.add_edge(u, v, weight=w)
@@ -107,7 +110,7 @@ def cooccur(
         ha="left", fontsize=11, color="grey",
     )
 
-    cmap = cm.get_cmap("viridis")
+    cmap = matplotlib.colormaps["viridis"]
     for ax, central in zip(axes, top_terms):
         ax.axis("off")
         neighbors = [
@@ -160,7 +163,7 @@ def cooccur(
                 zorder=5,
             )
 
-        ax.set_title(f"'{central}' — Top {max_neighbors} Neighbors",
+        ax.set_title(f"'{central}': Top {max_neighbors} Neighbors",
                      fontsize=12, fontweight="bold", color="#333333", pad=6)
 
     plt.tight_layout(rect=(0, 0, 1, 0.96))
@@ -175,7 +178,7 @@ def cooccur_interactive(
     top_n=5,
     exclude=None,
     max_neighbors=8,
-    style="reviewer3",
+    style="viridis",
     width=900,
     height_per_network=500,
 ):
@@ -197,6 +200,7 @@ def cooccur_interactive(
         raise ValueError("No co-occurrence edges found.")
 
     # Global centrality
+    nx = require("networkx", "network")
     G_global = nx.Graph()
     for (u, v), w in edge_weights.items():
         G_global.add_edge(u, v, weight=w)
@@ -204,7 +208,7 @@ def cooccur_interactive(
     top_terms = sorted(centrality, key=centrality.get, reverse=True)[:top_n]
 
     fig = sp.make_subplots(rows=top_n, cols=1, vertical_spacing=0.08)
-    cmap = cm.get_cmap("viridis")
+    cmap = matplotlib.colormaps["viridis"]
 
     for i, central in enumerate(top_terms, start=1):
         neighbors = [(v if u == central else u, w)

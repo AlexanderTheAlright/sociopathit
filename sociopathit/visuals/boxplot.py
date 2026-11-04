@@ -1,5 +1,5 @@
 """
-boxplot.py — Sociopath-it Visualization Module 📦
+boxplot.py: Sociopath-it Visualization Module
 --------------------------------------------------
 Box plots and violin plots for distribution comparison:
 - traditional box plots
@@ -9,6 +9,7 @@ Box plots and violin plots for distribution comparison:
 - Plotly interactive counterpart
 """
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
@@ -114,7 +115,7 @@ def boxplot(
         groups_dict = {"positive": labels}
         palette = generate_semantic_palette(groups_dict, mode=style_mode)
 
-    colors = [palette.get(label, cm.get_cmap("viridis")(0.6)) for label in labels]
+    colors = [palette.get(label, matplotlib.colormaps["viridis"](0.6)) for label in labels]
 
     # Create plot
     if violin:
@@ -123,7 +124,7 @@ def boxplot(
             positions=range(len(data)),
             showmeans=showmeans,
             showmedians=True,
-            vert=(orientation == "vertical")
+            orientation=orientation
         )
 
         # Color violin plots
@@ -144,7 +145,7 @@ def boxplot(
         bp = ax.boxplot(
             data,
             positions=range(len(data)),
-            labels=labels,
+            tick_labels=labels,
             patch_artist=True,
             showmeans=showmeans,
             meanprops=dict(marker='D', markerfacecolor='white', markeredgecolor='black', markersize=6),
@@ -152,7 +153,7 @@ def boxplot(
             whiskerprops=dict(color='black', linewidth=1.5),
             capprops=dict(color='black', linewidth=1.5),
             boxprops=dict(linewidth=1.5, edgecolor='black'),
-            vert=(orientation == "vertical")
+            orientation=orientation
         )
 
         # Color boxes
@@ -228,7 +229,6 @@ def boxplot(
         ax.set_yticks(range(len(labels)))
         ax.set_yticklabels(labels)
 
-    ax.grid(axis="y" if orientation == "vertical" else "x", linestyle=":", color="grey", linewidth=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -236,7 +236,7 @@ def boxplot(
     apply_titles(fig, title, subtitle, n=n)
 
     # Format tick labels: bold and angled
-    format_tick_labels(ax if orientation == "vertical" else 0)
+    format_tick_labels(ax)
 
     fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
     return fig, ax
@@ -358,12 +358,12 @@ def boxplot_subplots(
             groups = df[x].unique()
             data = [df[df[x] == g][y_var].dropna() for g in groups]
             labels = list(groups)
-            colors = [palette.get(label, cm.get_cmap("viridis")(0.6)) for label in labels]
+            colors = [palette.get(label, matplotlib.colormaps["viridis"](0.6)) for label in labels]
 
             # Plot
             if violin:
                 parts = ax.violinplot(data, positions=range(len(data)), showmeans=True,
-                                     showmedians=True, vert=(orientation == "vertical"))
+                                     showmedians=True, orientation=orientation)
                 for i, pc in enumerate(parts['bodies']):
                     pc.set_facecolor(colors[i])
                     pc.set_edgecolor('black')
@@ -374,8 +374,8 @@ def boxplot_subplots(
                         parts[partname].set_edgecolor('black')
                         parts[partname].set_linewidth(1.5)
             else:
-                bp = ax.boxplot(data, positions=range(len(data)), labels=labels, patch_artist=True,
-                               showmeans=True, vert=(orientation == "vertical"))
+                bp = ax.boxplot(data, positions=range(len(data)), tick_labels=labels, patch_artist=True,
+                               showmeans=True, orientation=orientation)
                 for patch, color in zip(bp['boxes'], colors):
                     patch.set_facecolor(color)
                     patch.set_alpha(0.7)
@@ -389,7 +389,6 @@ def boxplot_subplots(
                 ax.set_yticks(range(len(labels)))
                 ax.set_yticklabels(labels)
 
-            ax.grid(axis="y" if orientation == "vertical" else "x", linestyle=":", color="grey", linewidth=0.7)
             ax.spines["top"].set_visible(False)
             ax.spines["right"].set_visible(False)
             ax.set_title(y_var.replace("_", " ").title(), fontsize=12, weight="bold", pad=10)
@@ -414,12 +413,12 @@ def boxplot_subplots(
                 groups = plot_df[x].unique()
                 data = [plot_df[plot_df[x] == g][y].dropna() for g in groups]
                 labels = list(groups)
-                colors = [palette.get(label, cm.get_cmap("viridis")(0.6)) for label in labels]
+                colors = [palette.get(label, matplotlib.colormaps["viridis"](0.6)) for label in labels]
 
                 # Plot
                 if violin:
                     parts = ax.violinplot(data, positions=range(len(data)), showmeans=True,
-                                         showmedians=True, vert=(orientation == "vertical"))
+                                         showmedians=True, orientation=orientation)
                     for i, pc in enumerate(parts['bodies']):
                         pc.set_facecolor(colors[i])
                         pc.set_edgecolor('black')
@@ -430,8 +429,8 @@ def boxplot_subplots(
                             parts[partname].set_edgecolor('black')
                             parts[partname].set_linewidth(1.5)
                 else:
-                    bp = ax.boxplot(data, positions=range(len(data)), labels=labels, patch_artist=True,
-                                   showmeans=True, vert=(orientation == "vertical"))
+                    bp = ax.boxplot(data, positions=range(len(data)), tick_labels=labels, patch_artist=True,
+                                   showmeans=True, orientation=orientation)
                     for patch, color in zip(bp['boxes'], colors):
                         patch.set_facecolor(color)
                         patch.set_alpha(0.7)
@@ -449,7 +448,6 @@ def boxplot_subplots(
                     if row_idx == n_rows - 1:
                         ax.set_xlabel(y.replace("_", " ").title(), fontsize=11, weight="bold")
 
-                ax.grid(axis="y" if orientation == "vertical" else "x", linestyle=":", color="grey", linewidth=0.7)
                 ax.spines["top"].set_visible(False)
                 ax.spines["right"].set_visible(False)
                 ax.set_title(subplot_title, fontsize=12, weight="bold", pad=10)
@@ -526,7 +524,7 @@ def boxplot_interactive(
 
     if x is None:
         # Single distribution
-        color = palette.get(y, cm.get_cmap("viridis")(0.6))
+        color = palette.get(y, matplotlib.colormaps["viridis"](0.6))
         color_str = f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},{color[3]:.2f})"
 
         if violin:
@@ -550,7 +548,7 @@ def boxplot_interactive(
         # Multiple distributions
         for group in groups:
             group_data = df[df[x] == group][y]
-            color = palette.get(group, cm.get_cmap("viridis")(0.6))
+            color = palette.get(group, matplotlib.colormaps["viridis"](0.6))
             color_str = f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},{color[3]:.2f})"
 
             if violin:

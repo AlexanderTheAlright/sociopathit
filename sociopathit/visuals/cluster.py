@@ -1,5 +1,5 @@
 """
-cluster.py — Sociopath-it Visualization Module 🧬
+cluster.py: Sociopath-it Visualization Module
 ------------------------------------------------
 Hierarchical clustering dendrogram for numeric data.
 
@@ -40,7 +40,7 @@ def cluster(
     show_leaf_counts=True,
 ):
     """
-    Sociopath-it hierarchical cluster dendrogram (robust).
+    Sociopath-it hierarchical cluster dendrogram.
     """
     set_style(style_mode)
     fig, ax = plt.subplots(figsize=(7, 5), dpi=130)
@@ -75,7 +75,6 @@ def cluster(
     # Sociopath-it style cleanup
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
     apply_titles(fig, title, subtitle)
 
     # Format tick labels: bold and angled
@@ -178,7 +177,7 @@ def heatmap_cluster(
 
     # If show_values=True, override annot to True and force black text
     annot_opt = True if show_values else annot
-    annot_kwargs = {"fmt": ".2f", "annot_kws": {"color": "black", "weight": "bold"}} if annot_opt else {}
+    annot_kwargs = {"annot_kws": {"color": "black", "weight": "bold"}} if annot_opt else {}
 
     # Create clustermap
     g = sns.clustermap(
@@ -199,6 +198,8 @@ def heatmap_cluster(
 
     fig = g.fig
     fig.subplots_adjust(top=0.90)
+    if g.cax is not None:
+        g.cax.set_ylabel("Value", rotation=270, labelpad=15, fontsize=11, weight="bold")
 
     # Clear default seaborn title
     g.fig.suptitle("")

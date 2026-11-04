@@ -1,9 +1,10 @@
 """
-pairplot.py — Sociopath-it Visualization Module 🔗
+pair.py: Sociopath-it Visualization Module
 ---------------------------------------------------
 Pair plots for exploring relationships between multiple variables
 """
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
@@ -71,7 +72,7 @@ def pair(
     fig.set_facecolor("white")
 
     if hue is None:
-        color = cm.get_cmap("viridis")(0.6)
+        color = matplotlib.colormaps["viridis"](0.6)
         groups = [None]
         colors = [color]
     else:
@@ -79,7 +80,7 @@ def pair(
         if palette is None:
             groups_dict = {"positive": list(groups)}
             palette = generate_semantic_palette(groups_dict, mode=style_mode)
-        colors = [palette.get(g, cm.get_cmap("viridis")(0.6)) for g in groups]
+        colors = [palette.get(g, matplotlib.colormaps["viridis"](0.6)) for g in groups]
 
     for i, var1 in enumerate(vars):
         for j, var2 in enumerate(vars):
@@ -189,7 +190,7 @@ def pair_interactive(
 
     # Generate colors
     if hue is None:
-        color = cm.get_cmap("viridis")(0.6)
+        color = matplotlib.colormaps["viridis"](0.6)
         if hasattr(color, '__iter__'):
             colors = [f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},0.6)"]
         else:
@@ -201,7 +202,7 @@ def pair_interactive(
         palette = generate_semantic_palette(groups_dict, mode=style_mode)
         colors = []
         for g in groups:
-            color = palette.get(g, cm.get_cmap("viridis")(0.6))
+            color = palette.get(g, matplotlib.colormaps["viridis"](0.6))
             if hasattr(color, '__iter__'):
                 colors.append(f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},0.6)")
             else:

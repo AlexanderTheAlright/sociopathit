@@ -1,5 +1,5 @@
 """
-density.py — Sociopath-it Visualization Module 🌊
+density.py: Sociopath-it Visualization Module
 --------------------------------------------------
 Density plots including:
 - kernel density estimation (KDE)
@@ -8,6 +8,7 @@ Density plots including:
 - consistent Sociopath-it styling
 """
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
@@ -21,6 +22,7 @@ from ..utils.style import (
     apply_titles,
     get_data_element_kwargs,
     format_tick_labels,
+    legend_below,
 )
 
 
@@ -40,6 +42,7 @@ def kde(
     fill=True,
     bw_adjust=1.0,
     figsize=(10, 6),
+    legend_title=None,
 ):
     """
     Kernel density estimation plot.
@@ -68,6 +71,8 @@ def kde(
         Bandwidth adjustment factor
     figsize : tuple
         Figure size (width, height) in inches
+    legend_title : str, optional
+        Title for the group legend. None by default.
 
     Returns
     -------
@@ -85,7 +90,7 @@ def kde(
         x_range = np.linspace(data.min(), data.max(), 500)
         density = kde_obj(x_range)
 
-        color = cm.get_cmap("viridis")(0.6)
+        color = matplotlib.colormaps["viridis"](0.6)
         ax.plot(x_range, density, color=color, linewidth=2.5)
         if fill:
             ax.fill_between(x_range, density, alpha=0.3, color=color)
@@ -115,12 +120,11 @@ def kde(
                 x_range = np.linspace(data.min(), data.max(), 500)
                 density = kde_obj(x_range)
 
-                color = palette.get(g, cm.get_cmap("viridis")(0.6))
+                color = palette.get(g, matplotlib.colormaps["viridis"](0.6))
                 ax.plot(x_range, density, color=color, linewidth=2.5, label=str(g))
                 if fill:
                     ax.fill_between(x_range, density, alpha=0.3, color=color)
 
-        ax.legend(frameon=True, facecolor="white", edgecolor="grey", fontsize=13, title_fontsize=14)
 
     # ─── Widen y-axis window to avoid misleading narrow ranges ───────────────
     y_min, y_max = ax.get_ylim()
@@ -133,7 +137,6 @@ def kde(
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=14, weight="bold", color="black")
     ax.set_ylabel("Density", fontsize=14, weight="bold", color="black")
     ax.tick_params(axis='both', which='major', labelsize=12)
-    ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -142,7 +145,9 @@ def kde(
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
-    fig.tight_layout(rect=(0, 0, 1, 0.9 if subtitle else 0.94))
+    if group:
+        legend_below(ax, title=legend_title)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -232,7 +237,7 @@ def ridgeline(
             y_offset = i * spacing
             density_shifted = density + y_offset
 
-            color = palette.get(g, cm.get_cmap("viridis")(0.6))
+            color = palette.get(g, matplotlib.colormaps["viridis"](0.6))
             ax.plot(x_range, density_shifted, color='black', linewidth=1.5)
             ax.fill_between(x_range, y_offset, density_shifted, alpha=0.7, color=color)
 
@@ -315,7 +320,7 @@ def raincloud(
         groups_dict = {"positive": list(groups)}
         palette = generate_semantic_palette(groups_dict, mode=style_mode)
 
-    colors = [palette.get(g, cm.get_cmap("viridis")(0.6)) for g in groups]
+    colors = [palette.get(g, matplotlib.colormaps["viridis"](0.6)) for g in groups]
 
     for i, (g, color) in enumerate(zip(groups, colors)):
         data = df[df[x] == g][y].dropna().values
@@ -323,7 +328,7 @@ def raincloud(
 
         # 1. Violin plot (half, on the left)
         parts = ax.violinplot([data], positions=[pos], showmeans=False,
-                              showmedians=False, vert=True, widths=1.2)
+                              showmedians=False, orientation="vertical", widths=1.2)
         for pc in parts['bodies']:
             pc.set_facecolor(color)
             pc.set_edgecolor('black')
@@ -349,7 +354,6 @@ def raincloud(
     ax.set_xticklabels(groups)
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
     ax.set_ylabel(y.replace("_", " ").title(), fontsize=12, weight="bold", color="black")
-    ax.grid(axis="y", linestyle=":", color="grey", linewidth=0.7)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -490,7 +494,7 @@ def ryder_interactive(
             y_offset = i * spacing
             density_shifted = density + y_offset
 
-            color = palette.get(g, cm.get_cmap("viridis")(0.6))
+            color = palette.get(g, matplotlib.colormaps["viridis"](0.6))
             color_str = f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},0.7)"
 
             # Add filled area
@@ -566,7 +570,7 @@ def kde_interactive(
 
     if group is None:
         data = df[x].dropna()
-        color = cm.get_cmap("viridis")(0.6)
+        color = matplotlib.colormaps["viridis"](0.6)
         color_str = f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},{color[3]:.2f})"
 
         fig.add_trace(go.Violin(
@@ -585,7 +589,7 @@ def kde_interactive(
 
         for g in groups:
             data = df[df[group] == g][x].dropna()
-            color = palette.get(g, cm.get_cmap("viridis")(0.6))
+            color = palette.get(g, matplotlib.colormaps["viridis"](0.6))
             color_str = f"rgba({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)},{color[3]:.2f})"
 
             fig.add_trace(go.Violin(

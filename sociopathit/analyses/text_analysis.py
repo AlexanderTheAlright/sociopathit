@@ -2,7 +2,7 @@
 Text Analysis Module
 ====================
 
-Comprehensive text analysis tools including:
+Text analysis tools:
 - Text preprocessing and cleaning
 - Complexity and readability metrics
 - Similarity measures
@@ -40,7 +40,6 @@ try:
     HAS_NLTK = True
 except ImportError:
     HAS_NLTK = False
-    warnings.warn("nltk not available. Some text analysis features will be limited.")
 
 try:
     from transformers import (
@@ -51,14 +50,12 @@ try:
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False
-    warnings.warn("transformers not available. BERT features will be limited.")
 
 try:
     import requests
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
-    warnings.warn("requests not available. Ollama features will be limited.")
 
 
 # ============================================================================
@@ -816,7 +813,7 @@ class BERTModel:
         device: Optional[str] = None
     ):
         if not HAS_TRANSFORMERS:
-            raise ImportError("transformers library is required for BERT functionality")
+            raise ImportError("transformers and torch are required for BERT functionality. Install them with: pip install transformers torch")
 
         self.model_name = model_name
         self.task = task.lower()
@@ -1038,7 +1035,7 @@ class OllamaClassifier:
         temperature: float = 0.1
     ):
         if not HAS_REQUESTS:
-            raise ImportError("requests library is required for Ollama integration")
+            raise ImportError("requests is required for Ollama integration. Install it with: pip install requests")
 
         self.model = model
         self.base_url = base_url.rstrip('/')
@@ -1278,7 +1275,7 @@ class SentimentAnalyzer:
 
         if self.method == 'transformer':
             if not HAS_TRANSFORMERS:
-                raise ImportError("transformers library required for transformer method")
+                raise ImportError("transformers and torch are required for the transformer method. Install them with: pip install transformers torch")
 
             if model_name is None:
                 model_name = 'distilbert-base-uncased-finetuned-sst-2-english'
@@ -1475,7 +1472,7 @@ def analyze_corpus(
     n_topics: int = 5
 ) -> Dict[str, pd.DataFrame]:
     """
-    Comprehensive corpus analysis.
+    Corpus-level summary analysis.
 
     Parameters
     ----------

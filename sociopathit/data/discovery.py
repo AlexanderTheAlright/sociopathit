@@ -224,11 +224,11 @@ def discover_data(data_dir: Union[str, Path],
                 warnings.warn(f"Failed to load {fname}: {e}")
 
     # Log summary
-    print(f"✓ Loaded {len(loaded_data)} datasets")
+    print(f"Loaded {len(loaded_data)} datasets")
     if type_counts:
         print(f"  File types: {', '.join(f'{k}={v}' for k, v in type_counts.items())}")
     if skipped_files:
-        print(f"⚠ Skipped {len(skipped_files)} files")
+        print(f"Skipped {len(skipped_files)} files")
         if len(skipped_files) <= 5:
             for fname, reason in skipped_files:
                 print(f"  - {fname}: {reason}")
@@ -251,7 +251,7 @@ def find_latest_wave(data_dict: Dict[str, pd.DataFrame],
     data_dict : dict
         Dictionary of {survey_id: DataFrame} from discover_data().
     name_pattern : str, optional
-        Regex pattern to extract date from filename (e.g., r'(\d{4})').
+        Regex pattern to extract date from filename (e.g., r'(\\d{4})').
     date_col : str, optional
         Column name containing date information in the data.
 
@@ -267,7 +267,7 @@ def find_latest_wave(data_dict: Dict[str, pd.DataFrame],
     Examples
     --------
     >>> data = discover_data('surveys/')
-    >>> waves = find_latest_wave(data, name_pattern=r'_(\d{4})')
+    >>> waves = find_latest_wave(data, name_pattern=r'_(\\d{4})')
     >>> print(waves['latest'][0])
     'survey_2023'
     >>> print(waves['wave_labels'])

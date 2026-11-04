@@ -1,5 +1,5 @@
 """
-panel.py  Sociopath-it Panel Data Module
+panel.py: Sociopath-it Panel Data Module
 -----------------------------------------
 Panel data (longitudinal) regression models.
 
@@ -36,18 +36,13 @@ try:
     from linearmodels.panel import compare as panel_compare
     LINEARMODELS_AVAILABLE = True
 except ImportError:
-    LINEARMODELS_AVAILABLE = False
-    warnings.warn(
-        "linearmodels not available. Some panel features limited. "
-        "Install with: pip install linearmodels"
-    )
-
-warnings.filterwarnings('ignore')
+    LINEARMODELS_AVAILABLE = False  # pip install sociopathit[panel]
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+# ==============================================================================
 # FIXED EFFECTS MODELS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def fixed_effects(
     df: pd.DataFrame,
@@ -251,9 +246,9 @@ def _fixed_effects_manual(
     }
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # RANDOM EFFECTS MODELS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def random_effects(
     df: pd.DataFrame,
@@ -292,9 +287,9 @@ def random_effects(
     ...                          entity='person_id', time='year')
     """
     if not LINEARMODELS_AVAILABLE:
-        raise NotImplementedError(
+        raise ImportError(
             "Random effects requires linearmodels. "
-            "Install with: pip install linearmodels"
+            "Install it with: pip install sociopathit[panel]"
         )
 
     # Prepare inputs
@@ -348,9 +343,9 @@ def random_effects(
     }
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # FIRST DIFFERENCES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def first_differences(
     df: pd.DataFrame,
@@ -486,9 +481,9 @@ def _first_differences_manual(
     }
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # HAUSMAN TEST
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def hausman_test(
     fe_result: Dict,
@@ -568,9 +563,9 @@ def hausman_test(
         }
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # PANEL DESCRIPTIVES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def panel_summary(
     df: pd.DataFrame,
@@ -649,9 +644,9 @@ def panel_summary(
     return pd.DataFrame(results)
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # CONVENIENCE FUNCTIONS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def compare_panel_models(
     fe_result: Dict,

@@ -1,5 +1,5 @@
 """
-horizon.py - Sociopath-it Horizon Charts
+horizon.py: Sociopath-it Horizon Charts
 -----------------------------------------
 Space-efficient time series visualization using horizon charts.
 
@@ -18,9 +18,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from typing import Optional, List
-import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
     from ..utils.style import (
@@ -49,7 +47,7 @@ def horizon(
     n_bands: int = 4,
     title: Optional[str] = None,
     subtitle: Optional[str] = None,
-    style_mode: str = "sentiment",
+    style_mode: str = "viridis",
     figsize: tuple = (12, 3),
     output_path: Optional[str] = None,
 ):
@@ -73,7 +71,7 @@ def horizon(
         Plot title.
     subtitle : str, optional
         Plot subtitle.
-    style_mode : str, default "sentiment"
+    style_mode : str, default "viridis"
         Color scheme (sentiment recommended for pos/neg).
     figsize : tuple, default (12, 3)
         Figure size.
@@ -148,7 +146,6 @@ def horizon(
     ax.set_xlabel(x.replace("_", " ").title(), fontsize=11, weight='bold', color='black')
     ax.set_ylabel(y.replace("_", " ").title(), fontsize=11, weight='bold', color='black')
     ax.set_ylim(-band_height, band_height)
-    ax.grid(True, alpha=0.3, linestyle='--', axis='x')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
@@ -163,7 +160,8 @@ def horizon(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -176,7 +174,7 @@ def horizon_panel(
     n_bands: int = 4,
     title: Optional[str] = None,
     subtitle: Optional[str] = None,
-    style_mode: str = "sentiment",
+    style_mode: str = "viridis",
     figsize: Optional[tuple] = None,
     output_path: Optional[str] = None,
 ):
@@ -199,7 +197,7 @@ def horizon_panel(
         Overall title.
     subtitle : str, optional
         Overall subtitle.
-    style_mode : str, default "sentiment"
+    style_mode : str, default "viridis"
         Color scheme.
     figsize : tuple, optional
         Figure size (auto-calculated if None).
@@ -274,7 +272,6 @@ def horizon_panel(
         ax.set_ylabel(str(grp), fontsize=10, weight='bold', rotation=0, ha='right', va='center')
         ax.set_ylim(-band_height, band_height)
         ax.set_yticks([])
-        ax.grid(True, alpha=0.3, linestyle='--', axis='x')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -294,7 +291,8 @@ def horizon_panel(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -311,7 +309,7 @@ def horizon_interactive(
     n_bands: int = 4,
     title: Optional[str] = None,
     subtitle: Optional[str] = None,
-    style_mode: str = "sentiment",
+    style_mode: str = "viridis",
 ):
     """
     Interactive horizon chart using Plotly.
@@ -332,7 +330,7 @@ def horizon_interactive(
         Plot title.
     subtitle : str, optional
         Plot subtitle.
-    style_mode : str, default "sentiment"
+    style_mode : str, default "viridis"
         Color scheme.
 
     Returns

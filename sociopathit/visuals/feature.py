@@ -1,5 +1,5 @@
 """
-feature_importance.py - Sociopath-it Feature Importance Module
+feature.py: Sociopath-it Feature Importance Module
 ---------------------------------------------------------------
 SHAP-style waterfall charts and feature importance visualizations.
 
@@ -17,9 +17,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from typing import Optional, Dict, Union, List
-import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
     from ..utils.style import (
@@ -53,7 +51,7 @@ def feature_waterfall(
     max_features: int = 10,
     title: Optional[str] = None,
     subtitle: Optional[str] = None,
-    style_mode: str = "sentiment",
+    style_mode: str = "viridis",
     figsize: tuple = (10, 8),
     output_path: Optional[str] = None,
 ):
@@ -82,7 +80,7 @@ def feature_waterfall(
         Plot title.
     subtitle : str, optional
         Plot subtitle.
-    style_mode : str, default "sentiment"
+    style_mode : str, default "viridis"
         Color scheme (sentiment mode uses red/green for negative/positive).
     figsize : tuple, default (10, 8)
         Figure size.
@@ -207,7 +205,6 @@ def feature_waterfall(
     ax.set_xlabel('Value', fontsize=12, weight='bold', color='black')
 
     # Grid
-    ax.grid(True, axis='x', alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
     # Spines
@@ -223,7 +220,8 @@ def feature_waterfall(
     fig.tight_layout(rect=(0.15, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -337,7 +335,6 @@ def feature_importance_bar(
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#333333', linewidth=1.5, alpha=0.95))
 
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_axisbelow(True)
 
     # Spines
@@ -352,7 +349,8 @@ def feature_importance_bar(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -370,7 +368,7 @@ def feature_waterfall_interactive(
     max_features: int = 10,
     title: Optional[str] = None,
     subtitle: Optional[str] = None,
-    style_mode: str = "sentiment",
+    style_mode: str = "viridis",
 ):
     """
     Interactive waterfall chart using Plotly.
@@ -393,7 +391,7 @@ def feature_waterfall_interactive(
         Plot title.
     subtitle : str, optional
         Plot subtitle.
-    style_mode : str, default "sentiment"
+    style_mode : str, default "viridis"
         Color scheme.
 
     Returns

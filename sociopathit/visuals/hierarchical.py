@@ -1,5 +1,5 @@
 """
-hierarchical.py - Sociopath-it Hierarchical Visualizations
+hierarchical.py: Sociopath-it Hierarchical Visualizations
 -----------------------------------------------------------
 Treemap and sunburst charts for hierarchical data.
 
@@ -18,9 +18,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 from typing import Optional, List, Union
-import warnings
 
-warnings.filterwarnings('ignore')
 
 try:
     from ..utils.style import (
@@ -162,7 +160,8 @@ def treemap(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 
@@ -338,7 +337,8 @@ def sunburst(
     fig.tight_layout(rect=(0, 0, 1, 0.94 if subtitle or title else 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig
 

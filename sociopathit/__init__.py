@@ -2,8 +2,8 @@
 Sociopathit: A Python Package for Sociological Data Analysis
 =============================================================
 
-Sociopathit is a comprehensive toolkit for sociological research, providing
-tools for data analysis, visualization, and modeling.
+Sociopathit handles survey data, runs common analyses and draws figures
+for social science research.
 
 Modules:
     - analyses: Statistical modeling and regression analysis
@@ -13,7 +13,7 @@ Modules:
     - data: Data management
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # Import submodules
 from . import analyses

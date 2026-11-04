@@ -1,7 +1,7 @@
 """
-factormap.py — Sociopath-it Visualization Module
+factormap.py: Sociopath-it Visualization Module
 ------------------------------------------------
-Universal factor map visualizer for MCA, PCA, CA, or any 2D reduction.
+Factor map plots for MCA, PCA, CA, or any 2D reduction.
 
 Features:
 - Active vs supplementary variable mapping
@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from adjustText import adjust_text
-from ..utils.style import set_style, apply_titles, get_color, format_tick_labels
+from ..utils.style import set_style, apply_titles, get_color, format_tick_labels, legend_below
+from ..utils.optional import require
 
 def factormap(
     active_coords,
@@ -141,6 +141,7 @@ def factormap(
                     zorder=6,
                 ))
 
+        adjust_text = require("adjustText", "labels").adjust_text
         adjust_text(
             texts, ax=ax,
             expand_points=(1.3, 1.3), expand_text=(1.2, 1.2),
@@ -167,29 +168,15 @@ def factormap(
         ax.set_xlabel(dim_labels[0], weight="bold", fontsize=12, color="black")
         ax.set_ylabel(dim_labels[1], weight="bold", fontsize=12, color="black")
 
-    # Legend outside to the right with larger text
-    legend = ax.legend(
-        bbox_to_anchor=(1.02, 1.0),
-        loc="upper left",
-        frameon=True,
-        facecolor="white",
-        edgecolor="grey",
-        fontsize=10,
-        title="Variable Type",
-        title_fontsize=11,
-    )
-    legend.get_title().set_fontweight("bold")
-    legend.get_frame().set_linewidth(1.5)
-    legend.get_frame().set_alpha(0.95)
-
     # Title and layout
     apply_titles(fig, title, subtitle, n=len(active))
 
     # Format tick labels: bold and angled
     format_tick_labels(ax)
 
-    plt.subplots_adjust(right=0.82, left=0.12, bottom=0.12, top=0.92)
-    fig.tight_layout(rect=(0.08, 0.08, 0.85, 0.9 if subtitle else 0.94))
+    # One legend centred below the axes
+    legend_below(ax)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -402,14 +389,6 @@ def factormap_3d(
         ax.set_zlabel(dim_labels[2], weight="bold", fontsize=11, color="black")
 
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--')
-
-    # Legend - position outside to the right
-    legend = ax.legend(bbox_to_anchor=(1.15, 1.0), loc='upper left',
-                      frameon=True, facecolor='white',
-                      edgecolor='grey', fontsize=10)
-    legend.get_frame().set_linewidth(1.5)
-    legend.get_frame().set_alpha(0.95)
 
     # Title - reduce space, increase plot area
     apply_titles(fig, title, subtitle)
@@ -418,8 +397,9 @@ def factormap_3d(
     # Format tick labels: bold (no rotation for 3D plots - labels are on axes)
     format_tick_labels(ax, rotation_x=0)
 
-    plt.subplots_adjust(left=0.05, right=0.85, top=0.92, bottom=0.05)
-    plt.tight_layout(rect=(0, 0, 0.88, 0.9 if subtitle else 0.94))
+    # One legend centred below the axes
+    legend_below(ax)
+    plt.tight_layout(rect=(0, 0.02, 1, 0.98))
     return fig, ax
 
 
@@ -653,16 +633,11 @@ def variance_explained(
     ax2.set_ylim(0, 105)
 
     # Grid
-    ax.grid(True, alpha=0.3, linestyle='--', axis='y')
     ax.set_axisbelow(True)
 
-    # Combine legends - position outside to the right
+    # Combine both axes' entries into one legend, placed below the axes at layout time
     lines1, labels1 = ax.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
-    ax.legend(lines1 + lines2, labels1 + labels2,
-             bbox_to_anchor=(1.15, 1.0), loc='upper left',
-             frameon=True, facecolor='white',
-             edgecolor='grey', fontsize=10)
 
     # Spines
     ax.spines['top'].set_visible(False)
@@ -671,12 +646,13 @@ def variance_explained(
     # Title
     apply_titles(fig, title, subtitle)
 
-    # Layout - adjust for legend on right
-    plt.subplots_adjust(right=0.80)
-    fig.tight_layout(rect=(0, 0, 0.85, 0.94 if subtitle or title else 0.98))
+    # One legend centred below the axes
+    legend_below(ax, handles=lines1 + lines2, labels=labels1 + labels2)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.98))
 
     if output_path:
-        fig.savefig(output_path, dpi=300, bbox_inches='tight')
+        from ..utils.style import save_figure
+        save_figure(fig, output_path)
 
     return fig, ax
 

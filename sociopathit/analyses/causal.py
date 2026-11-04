@@ -1,5 +1,5 @@
 """
-causal.py  Sociopath-it Causal Inference Module
+causal.py: Sociopath-it Causal Inference Module
 -----------------------------------------------
 Causal inference methods for sociological research.
 
@@ -42,12 +42,11 @@ except ImportError:
     SKLEARN_AVAILABLE = False
     warnings.warn("sklearn not available. Install with: pip install scikit-learn")
 
-warnings.filterwarnings('ignore')
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # PROPENSITY SCORE METHODS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 class PropensityScoreAnalysis:
     """
@@ -424,9 +423,9 @@ def propensity_score(
     return ps
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # DIFFERENCE-IN-DIFFERENCES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def difference_in_differences(
     df: pd.DataFrame,
@@ -530,9 +529,9 @@ def difference_in_differences(
     return result
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # INSTRUMENTAL VARIABLES
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def instrumental_variables(
     df: pd.DataFrame,
@@ -643,9 +642,9 @@ def instrumental_variables(
     }
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # REGRESSION DISCONTINUITY (RDD)
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 def regression_discontinuity(
     df: pd.DataFrame,
@@ -753,9 +752,9 @@ def regression_discontinuity(
     }
 
 
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 # HELPER IMPORTS
-# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# ==============================================================================
 
 try:
     from scipy import stats

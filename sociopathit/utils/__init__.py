@@ -2,27 +2,20 @@
 Sociopathit Utils Module
 =========================
 
-Utility functions, styling tools, and project templates.
+Utility functions and styling tools.
 
 Modules
 -------
 style
     Color palettes, plot themes, and style utilities.
-
-PowerShell Scripts (in this directory)
----------------------------------------
-sociopathit-init.ps1
-    Main utility for creating projects and notebooks.
-create-project.ps1
-    Generate complete research project structures.
-create-notebook.ps1
-    Create template Jupyter notebooks for different analysis types.
-
-See utils/README.md for detailed usage instructions.
+optional
+    Lazy imports for optional libraries, with install hints.
 """
 
 from . import style
+from . import optional
 
 __all__ = [
     'style',
+    'optional',
 ]
